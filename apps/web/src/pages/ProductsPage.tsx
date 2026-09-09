@@ -4,10 +4,10 @@ export default function ProductsPage() {
   const [product, setProduct] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const gtin = '8901030985223'; // Hardcoded for prototype demonstration
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
 
   useEffect(() => {
-    // Read GTIN from URL query param, default to 8901030985223 if missing
     const searchParams = new URLSearchParams(window.location.search);
     const targetGtin = searchParams.get('gtin') || '8901030985223';
     
@@ -36,11 +36,37 @@ export default function ProductsPage() {
     fetchData();
   }, []);
 
+  const handleSync = () => {
+    setIsSyncing(true);
+    setTimeout(() => {
+      setIsSyncing(false);
+    }, 1500);
+  };
+
   if (loading) return <div className="content" style={{ color: 'var(--dim)' }}>Loading Product Master...</div>;
   if (!product) return <div className="content" style={{ color: 'var(--red)' }}>Failed to connect to API Backend.</div>;
 
   return (
     <section className="content">
+      {showEditor && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="panel" style={{ width: '450px', background: 'var(--bg)' }}>
+            <div className="panel-head">
+              <h2 className="panel-title">Edit Product Master</h2>
+              <button className="icon-btn" style={{ border: 'none' }} onClick={() => setShowEditor(false)}>X</button>
+            </div>
+            <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div><label style={{ fontSize: '11px', color: 'var(--dim)' }}>GTIN</label><input type="text" className="search" style={{ width: '100%' }} defaultValue={product.gtin} readOnly /></div>
+              <div><label style={{ fontSize: '11px', color: 'var(--dim)' }}>Product Name</label><input type="text" className="search" style={{ width: '100%' }} defaultValue={product.name} /></div>
+              <div style={{ display: 'flex', gap: '14px', marginTop: '8px' }}>
+                <button className="outline" style={{ flex: 1 }} onClick={() => setShowEditor(false)}>Cancel</button>
+                <button className="primary" style={{ flex: 1 }} onClick={() => setShowEditor(false)}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="header">
         <div>
           <div className="eyebrow">Product Intelligence</div>
@@ -48,8 +74,8 @@ export default function ProductsPage() {
           <p className="subtitle">Master catalog identity and cross-location history</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="outline" onClick={() => alert('Mock: ERP synchronization initiated. GTIN records will update in the background.')}>Sync from ERP</button>
-          <button className="primary" onClick={() => alert('Mock: Opening product master editor modal...')}>Edit Master</button>
+          <button className="outline" onClick={handleSync}>{isSyncing ? 'Syncing...' : 'Sync from ERP'}</button>
+          <button className="primary" onClick={() => setShowEditor(true)}>Edit Master</button>
         </div>
       </div>
 

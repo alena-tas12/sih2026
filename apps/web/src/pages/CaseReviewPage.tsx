@@ -59,6 +59,11 @@ export default function CaseReviewPage() {
     setReviewActions(prev => ({ ...prev, [id]: action }));
   };
 
+  const handleFinalize = () => {
+    alert('Inspection finalized. Audit log updated.');
+    window.location.href = '/cases';
+  };
+
   return (
     <section className="content">
       <div className="header">
@@ -69,7 +74,7 @@ export default function CaseReviewPage() {
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button className="outline">Export Evidence Graph</button>
-          <button className="primary">Finalize Inspection</button>
+          <button className="primary" onClick={handleFinalize}>Finalize Inspection</button>
         </div>
       </div>
 

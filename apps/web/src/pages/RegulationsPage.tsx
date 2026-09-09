@@ -9,6 +9,7 @@ const rulesData = [
 
 export default function RegulationsPage() {
   const [search, setSearch] = useState('');
+  const [showEditor, setShowEditor] = useState(false);
 
   const filteredRules = useMemo(() => {
     return rulesData.filter(r => 
@@ -20,6 +21,27 @@ export default function RegulationsPage() {
 
   return (
     <section className="content">
+      {/* Rule Editor Modal */}
+      {showEditor && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="panel" style={{ width: '500px', background: 'var(--bg)' }}>
+            <div className="panel-head">
+              <h2 className="panel-title">Rule Engine Editor</h2>
+              <button className="icon-btn" style={{ border: 'none' }} onClick={() => setShowEditor(false)}>X</button>
+            </div>
+            <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div><label style={{ fontSize: '11px', color: 'var(--dim)' }}>Legal Reference</label><input type="text" className="search" style={{ width: '100%' }} placeholder="e.g. PC Rules 2011" /></div>
+              <div><label style={{ fontSize: '11px', color: 'var(--dim)' }}>Target Extraction Field</label><input type="text" className="search" style={{ width: '100%' }} placeholder="e.g. Net Quantity" /></div>
+              <div><label style={{ fontSize: '11px', color: 'var(--dim)' }}>Deterministic Logic (AST)</label><textarea className="search" style={{ width: '100%', height: '80px', padding: '10px' }} placeholder="value > 0 AND unit IN ('g','kg')" /></div>
+              <div style={{ display: 'flex', gap: '14px', marginTop: '8px' }}>
+                <button className="outline" style={{ flex: 1 }} onClick={() => setShowEditor(false)}>Cancel</button>
+                <button className="primary" style={{ flex: 1 }} onClick={() => setShowEditor(false)}>Compile & Save Rule</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="header">
         <div>
           <div className="eyebrow">System</div>
@@ -33,7 +55,7 @@ export default function RegulationsPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <button className="primary" onClick={() => alert('Mock: Opening rule builder interface...')}>+ Add Rule</button>
+          <button className="primary" onClick={() => setShowEditor(true)}>+ Add Rule</button>
         </div>
       </div>
 
