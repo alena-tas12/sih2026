@@ -1,41 +1,26 @@
-const express = require('express');
-const { getDb } = require('../data/db');
-const router = express.Router();
+import { Hono } from 'hono'
+const router = new Hono()
 
-// Create new inspection
-router.post('/', async (req, res) => {
-    try {
-        const db = getDb();
-        const { gtin, location, extractedMrp, extractedQty, status } = req.body;
-        const id = 'CASE-' + Math.floor(Math.random() * 100000);
-        
-        await db.run(`
-            INSERT INTO inspections (id, gtin, location, extractedMrp, extractedQty, status)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `, [id, gtin, location, extractedMrp, extractedQty, status]);
+router.post('/', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { id, gtin, location, extractedMrp, extractedQty, extractedMfgDate, extractedExpDate, status, reviewDecision, reviewerNotes } = body
 
-        res.json({ success: true, id });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
+    await c.env.DB.prepare(`
+      INSERT INTO inspections (id, gtin, location, extractedMrp, extractedQty, extractedMfgDate, extractedExpDate, status, reviewDecision, reviewerNotes) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id, gtin, location, extractedMrp || null, extractedQty || null, extractedMfgDate || null, extractedExpDate || null, status, reviewDecision || null, reviewerNotes || null
+    ).run()
 
-// Update inspection (Decision / Review)
-router.patch('/:id/review', async (req, res) => {
-    try {
-        const db = getDb();
-        const { status, reviewDecision, reviewerNotes } = req.body;
-        
-        await db.run(`
-            UPDATE inspections 
-            SET status = ?, reviewDecision = ?, reviewerNotes = ?
-            WHERE id = ?
-        `, [status, reviewDecision, reviewerNotes, req.params.id]);
+    await c.env.DB.prepare(
+      "INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)"
+    ).bind('INSPECTION_RECORDED', 'API_USER', id, `Recorded inspection for ${gtin}`).run()
 
-        res.json({ success: true });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
+    return c.json({ success: true, id }, 201)
+  } catch (err) {
+    return c.json({ error: 'Database error saving inspection' }, 500)
+  }
+})
 
-module.exports = router;
+export default router

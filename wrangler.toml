@@ -1,5 +1,11 @@
 name = "sih2026"
 compatibility_date = "2026-09-09"
+main = "apps/api/src/index.js"
 
 [assets]
 directory = "apps/web/dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "genesis_db"
+database_id = "paste-your-d1-id-here"

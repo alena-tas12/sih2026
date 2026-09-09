@@ -2,9 +2,10 @@
   "name": "genesis-compliance-api",
   "version": "1.0.0",
   "description": "Genesis Compliance - Backend API + Frontend Server",
-  "main": "server.js",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start": "wrangler dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
@@ -14,9 +15,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^6.0.1"
+    "hono": "^4.13.7"
   }
 }

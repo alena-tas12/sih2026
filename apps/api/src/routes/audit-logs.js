@@ -1,29 +1,28 @@
-const express = require('express');
-const router = express.Router();
-const { getDb } = require('../data/db');
+import { Hono } from 'hono'
+const router = new Hono()
 
-router.get('/', async (req, res) => {
+router.get('/', async (c) => {
   try {
-    const db = getDb();
-    const rows = await db.all('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100');
-    res.json(rows);
+    const { results } = await c.env.DB.prepare('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100').all()
+    return c.json(results)
   } catch (err) {
-    res.status(500).json({ error: 'Database error fetching audit logs' });
+    return c.json({ error: 'Database error fetching audit logs' }, 500)
   }
-});
+})
 
-router.post('/', async (req, res) => {
+router.post('/', async (c) => {
   try {
-    const db = getDb();
-    const { action, actor, targetId, details } = req.body;
-    await db.run(
-      'INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)',
-      [action, actor, targetId, details]
-    );
-    res.status(201).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Error logging action' });
-  }
-});
+    const body = await c.req.json()
+    const { action, actor, targetId, details } = body
 
-module.exports = router;
+    await c.env.DB.prepare(
+      'INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)'
+    ).bind(action, actor, targetId, details).run()
+
+    return c.json({ success: true }, 201)
+  } catch (err) {
+    return c.json({ error: 'Error logging action' }, 500)
+  }
+})
+
+export default router

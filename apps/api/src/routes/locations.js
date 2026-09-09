@@ -1,34 +1,32 @@
-const express = require('express');
-const router = express.Router();
-const { getDb } = require('../data/db');
+import { Hono } from 'hono'
+const router = new Hono()
 
-router.get('/', async (req, res) => {
+router.get('/', async (c) => {
   try {
-    const db = getDb();
-    const rows = await db.all('SELECT * FROM locations ORDER BY createdAt DESC');
-    res.json(rows);
+    const { results } = await c.env.DB.prepare('SELECT * FROM locations ORDER BY createdAt DESC').all()
+    return c.json(results)
   } catch (err) {
-    res.status(500).json({ error: 'Database error fetching locations' });
+    return c.json({ error: 'Database error fetching locations' }, 500)
   }
-});
+})
 
-router.post('/', async (req, res) => {
+router.post('/', async (c) => {
   try {
-    const db = getDb();
-    const { id, name, type, region } = req.body;
-    await db.run(
-      'INSERT INTO locations (id, name, type, region) VALUES (?, ?, ?, ?)',
-      [id, name, type, region]
-    );
-    // Log the action
-    await db.run(
-      'INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)',
-      ['CREATE_LOCATION', 'API_USER', id, `Created location ${name}`]
-    );
-    res.status(201).json({ success: true, id });
-  } catch (err) {
-    res.status(500).json({ error: 'Error creating location' });
-  }
-});
+    const body = await c.req.json()
+    const { id, name, type, region } = body
 
-module.exports = router;
+    await c.env.DB.prepare(
+      'INSERT INTO locations (id, name, type, region) VALUES (?, ?, ?, ?)'
+    ).bind(id, name, type, region).run()
+
+    await c.env.DB.prepare(
+      'INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)'
+    ).bind('CREATE_LOCATION', 'API_USER', id, `Created location ${name}`).run()
+
+    return c.json({ success: true, id }, 201)
+  } catch (err) {
+    return c.json({ error: 'Error creating location' }, 500)
+  }
+})
+
+export default router

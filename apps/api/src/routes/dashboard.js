@@ -1,47 +1,36 @@
-const express = require('express');
-const { getDb } = require('../data/db');
-const router = express.Router();
+import { Hono } from 'hono'
+const router = new Hono()
 
-router.get('/', async (req, res) => {
-    try {
-        const db = getDb();
-        
-        const productsTracked = (await db.get('SELECT COUNT(*) as c FROM products')).c;
-        const totalMatches = (await db.get("SELECT COUNT(*) as c FROM inspections WHERE status = 'COMPLIANT'")).c;
-        const totalDifferences = (await db.get("SELECT COUNT(*) as c FROM inspections WHERE status = 'NON_COMPLIANT'")).c;
-        const pendingVerifications = (await db.get("SELECT COUNT(*) as c FROM inspections WHERE status = 'REVIEW_REQUIRED'")).c;
-        const totalInspections = (await db.get('SELECT COUNT(*) as c FROM inspections')).c;
+router.get('/', async (c) => {
+  try {
+    const trackedRes = await c.env.DB.prepare('SELECT COUNT(*) as count FROM products').first()
+    const matchRes = await c.env.DB.prepare('SELECT COUNT(*) as count FROM inspections WHERE status = "COMPLIANT"').first()
+    const diffRes = await c.env.DB.prepare('SELECT COUNT(*) as count FROM inspections WHERE status = "NON_COMPLIANT"').first()
+    const pendingRes = await c.env.DB.prepare('SELECT COUNT(*) as count FROM inspections WHERE status = "REVIEW_REQUIRED"').first()
+    
+    const { results: alerts } = await c.env.DB.prepare(`
+      SELECT i.*, p.name as productName 
+      FROM inspections i
+      JOIN products p ON i.gtin = p.gtin
+      WHERE i.status IN ('NON_COMPLIANT', 'REVIEW_REQUIRED')
+      ORDER BY i.createdAt DESC LIMIT 5
+    `).all()
+    
+    const { results: recentLogs } = await c.env.DB.prepare('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 5').all()
 
-        const matchPercentage = totalInspections === 0 ? 100 : Math.round((totalMatches / totalInspections) * 1000) / 10;
+    return c.json({
+      metrics: {
+        productsTracked: trackedRes.count,
+        crossLocationMatches: matchRes.count,
+        declarationDifferences: diffRes.count,
+        pendingVerification: pendingRes.count
+      },
+      crossLocationAlerts: alerts,
+      recentActivity: recentLogs
+    })
+  } catch (err) {
+    return c.json({ error: 'Database error fetching dashboard data' }, 500)
+  }
+})
 
-        const activeAlerts = await db.all(`
-            SELECT i.id, p.name as product, p.gtin, i.location, 'MRP' as conflictingField, i.createdAt
-            FROM inspections i
-            JOIN products p ON i.gtin = p.gtin
-            WHERE i.status = 'NON_COMPLIANT' OR i.status = 'REVIEW_REQUIRED'
-            ORDER BY i.createdAt DESC
-            LIMIT 5
-        `);
-
-        const recentActivity = await db.all(`
-            SELECT i.id, i.status, i.location, p.gtin, i.createdAt
-            FROM inspections i
-            JOIN products p ON i.gtin = p.gtin
-            ORDER BY i.createdAt DESC
-            LIMIT 5
-        `);
-
-        res.json({
-            productsTracked,
-            matchPercentage,
-            totalDifferences,
-            pendingVerifications,
-            activeAlerts,
-            recentActivity
-        });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-module.exports = router;
+export default router
