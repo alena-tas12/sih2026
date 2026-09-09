@@ -1,6 +1,10 @@
 import React from 'react';
 
 export default function AnalyticsPage() {
+  const handleExport = () => {
+    alert('Analytics report exported as CSV.');
+  };
+
   return (
     <section className="content">
       <div className="header">
