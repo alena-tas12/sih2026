@@ -9,11 +9,10 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import './App.css';
 
-// Placeholder components for new pages
-const CaseReviewPage = () => <div className="page-content">Case Review workspace</div>;
-const InspectionsPage = () => <div className="page-content">Inspections step workflow</div>;
-const EvidencePage = () => <div className="page-content">Evidence library grid</div>;
-const AuditLogPage = () => <div className="page-content">Audit Log chronological table</div>;
+import EvidencePage from './pages/EvidencePage';
+import AuditLogPage from './pages/AuditLogPage';
+import InspectionsPage from './pages/InspectionsPage';
+import CaseReviewPage from './pages/CaseReviewPage';
 
 export default function App() {
   return (
