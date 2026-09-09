@@ -56,8 +56,8 @@ export default function ProductsPage() {
           <p className="subtitle">Master catalog identity and cross-location history</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="outline">Sync from ERP</button>
-          <button className="primary">Edit Master</button>
+          <button className="outline" onClick={() => alert('Mock: ERP synchronization initiated. GTIN records will update in the background.')}>Sync from ERP</button>
+          <button className="primary" onClick={() => alert('Mock: Opening product master editor modal...')}>Edit Master</button>
         </div>
       </div>
 

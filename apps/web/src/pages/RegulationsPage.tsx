@@ -1,6 +1,23 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+
+const rulesData = [
+  { id: 'RULE-PC-01', ref: 'PC Rules 2011, Sec 6(1)(a)', field: 'Net Quantity', logic: `value > 0 AND unit IN ('g','kg','ml','L')`, status: 'Active' },
+  { id: 'RULE-PC-02', ref: 'PC Rules 2011, Sec 6(1)(e)', field: 'MRP', logic: `format MATCHES '^Rs\\.\\s?\\d+(\\.\\d{1,2})?$'`, status: 'Active' },
+  { id: 'RULE-PC-03', ref: 'PC Rules 2011, Sec 6(1)(b)', field: 'Mfg Address', logic: `EXISTS(value) AND length(value) > 10`, status: 'Active' },
+  { id: 'RULE-FSSAI-04', ref: 'FSSAI Packaging Regs', field: 'Veg/Non-Veg Logo', logic: `DETECT_LOGO(type='veg_or_nonveg', conf > 80)`, status: 'Draft' },
+];
 
 export default function RegulationsPage() {
+  const [search, setSearch] = useState('');
+
+  const filteredRules = useMemo(() => {
+    return rulesData.filter(r => 
+      r.id.toLowerCase().includes(search.toLowerCase()) || 
+      r.ref.toLowerCase().includes(search.toLowerCase()) || 
+      r.field.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search]);
+
   return (
     <section className="content">
       <div className="header">
@@ -10,8 +27,13 @@ export default function RegulationsPage() {
           <p className="subtitle">Temporal rule engine mapping legal text to deterministic logic constraints.</p>
         </div>
         <div className="filters">
-          <input className="search" placeholder="Search rules or laws..." />
-          <button className="primary">+ Add Rule</button>
+          <input 
+            className="search" 
+            placeholder="Search rules or laws..." 
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <button className="primary" onClick={() => alert('Mock: Opening rule builder interface...')}>+ Add Rule</button>
         </div>
       </div>
 
@@ -35,34 +57,22 @@ export default function RegulationsPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="mono">RULE-PC-01</td>
-                  <td className="primary-cell">PC Rules 2011, Sec 6(1)(a)</td>
-                  <td>Net Quantity</td>
-                  <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{`value > 0 AND unit IN ('g','kg','ml','L')`}</td>
-                  <td><span className="tag green">Active</span></td>
-                </tr>
-                <tr>
-                  <td className="mono">RULE-PC-02</td>
-                  <td className="primary-cell">PC Rules 2011, Sec 6(1)(e)</td>
-                  <td>MRP</td>
-                  <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{`format MATCHES '^Rs\\.\\s?\\d+(\\.\\d{1,2})?$'`}</td>
-                  <td><span className="tag green">Active</span></td>
-                </tr>
-                <tr>
-                  <td className="mono">RULE-PC-03</td>
-                  <td className="primary-cell">PC Rules 2011, Sec 6(1)(b)</td>
-                  <td>Mfg Address</td>
-                  <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{`EXISTS(value) AND length(value) > 10`}</td>
-                  <td><span className="tag green">Active</span></td>
-                </tr>
-                <tr>
-                  <td className="mono">RULE-FSSAI-04</td>
-                  <td className="primary-cell">FSSAI Packaging Regs</td>
-                  <td>Veg/Non-Veg Logo</td>
-                  <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{`DETECT_LOGO(type='veg_or_nonveg', conf > 80)`}</td>
-                  <td><span className="tag amber">Draft</span></td>
-                </tr>
+                {filteredRules.map(r => (
+                  <tr key={r.id}>
+                    <td className="mono">{r.id}</td>
+                    <td className="primary-cell">{r.ref}</td>
+                    <td>{r.field}</td>
+                    <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{r.logic}</td>
+                    <td><span className={`tag ${r.status === 'Active' ? 'green' : 'amber'}`}>{r.status}</span></td>
+                  </tr>
+                ))}
+                {filteredRules.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: 'var(--dim)' }}>
+                      No rules match your search.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

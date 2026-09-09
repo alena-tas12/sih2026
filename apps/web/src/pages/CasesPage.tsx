@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const casesData = [
@@ -11,6 +11,23 @@ const casesData = [
 
 export default function CasesPage() {
   const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('All Statuses');
+
+  const filteredCases = useMemo(() => {
+    return casesData.filter(c => {
+      const matchesSearch = c.id.toLowerCase().includes(search.toLowerCase()) || 
+                            c.product.toLowerCase().includes(search.toLowerCase()) ||
+                            c.org.toLowerCase().includes(search.toLowerCase());
+      
+      const matchesStatus = filterStatus === 'All Statuses' ||
+                            (filterStatus === 'Compliant' && c.status === 'COMPLIANT') ||
+                            (filterStatus === 'Needs Review' && c.status === 'REVIEW_REQUIRED') ||
+                            (filterStatus === 'Non-Compliant' && c.status === 'NON_COMPLIANT');
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [search, filterStatus]);
 
   return (
     <section className="content">
@@ -20,13 +37,20 @@ export default function CasesPage() {
           <h1>Inspection Cases</h1>
           <p className="subtitle">Complete audit log of all processed compliance scans.</p>
         </div>
-        <button className="primary">New inspection</button>
+        <button className="primary" onClick={() => navigate('/inspections')}>New inspection</button>
       </div>
 
       <div className="panel bottom">
         <div className="panel-head" style={{ gap: '16px' }}>
-          <input type="text" className="search" placeholder="Search cases by ID or Product..." style={{ flex: 1, maxWidth: 'none' }} />
-          <select>
+          <input 
+            type="text" 
+            className="search" 
+            placeholder="Search cases by ID or Product..." 
+            style={{ flex: 1, maxWidth: 'none' }} 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <option>All Statuses</option>
             <option>Compliant</option>
             <option>Needs Review</option>
@@ -46,7 +70,7 @@ export default function CasesPage() {
               </tr>
             </thead>
             <tbody>
-              {casesData.map(c => {
+              {filteredCases.map(c => {
                 const statusMap: Record<string, string> = {
                   COMPLIANT: 'green',
                   NON_COMPLIANT: 'danger',
@@ -69,6 +93,13 @@ export default function CasesPage() {
                   </tr>
                 );
               })}
+              {filteredCases.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: 'var(--dim)' }}>
+                    No cases match your filters.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

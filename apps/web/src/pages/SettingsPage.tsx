@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function SettingsPage() {
+  const [autoApprove, setAutoApprove] = useState(85);
+  const [humanReview, setHumanReview] = useState(60);
+  const [haltContradiction, setHaltContradiction] = useState(true);
+
+  const handleSave = () => {
+    alert(`Mock: Settings successfully saved!\n- Auto-Approve: ${autoApprove}%\n- Human Review: ${humanReview}%\n- Halt on Contradiction: ${haltContradiction}`);
+  };
+
   return (
     <section className="content">
       <div className="header">
@@ -9,7 +17,7 @@ export default function SettingsPage() {
           <h1>Settings</h1>
           <p className="subtitle">Configuration for the Genesis Compliance Engine</p>
         </div>
-        <button className="primary">Save Changes</button>
+        <button className="primary" onClick={handleSave}>Save Changes</button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '32px' }}>
@@ -30,10 +38,15 @@ export default function SettingsPage() {
               <label style={{ display: 'block', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>
                 Auto-Approve Threshold (%)
               </label>
-              <input type="number" defaultValue={85} style={{ 
-                background: 'var(--bg)', border: '1px solid var(--line2)', color: 'var(--text)',
-                padding: '10px 14px', borderRadius: '7px', width: '120px', fontSize: '14px', outline: 'none' 
-              }} />
+              <input 
+                type="number" 
+                value={autoApprove}
+                onChange={e => setAutoApprove(Number(e.target.value))}
+                style={{ 
+                  background: 'var(--bg)', border: '1px solid var(--line2)', color: 'var(--text)',
+                  padding: '10px 14px', borderRadius: '7px', width: '120px', fontSize: '14px', outline: 'none' 
+                }} 
+              />
               <p style={{ fontSize: '12px', color: 'var(--dim)', marginTop: '6px' }}>
                 Extractions strictly above this confidence level are marked COMPLIANT automatically.
               </p>
@@ -45,10 +58,15 @@ export default function SettingsPage() {
               <label style={{ display: 'block', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>
                 Require Human Review Threshold (%)
               </label>
-              <input type="number" defaultValue={60} style={{ 
-                background: 'var(--bg)', border: '1px solid var(--line2)', color: 'var(--text)',
-                padding: '10px 14px', borderRadius: '7px', width: '120px', fontSize: '14px', outline: 'none' 
-              }} />
+              <input 
+                type="number" 
+                value={humanReview}
+                onChange={e => setHumanReview(Number(e.target.value))}
+                style={{ 
+                  background: 'var(--bg)', border: '1px solid var(--line2)', color: 'var(--text)',
+                  padding: '10px 14px', borderRadius: '7px', width: '120px', fontSize: '14px', outline: 'none' 
+                }} 
+              />
               <p style={{ fontSize: '12px', color: 'var(--dim)', marginTop: '6px' }}>
                 Extractions below this confidence level always trigger the NEEDS_REVIEW state.
               </p>
@@ -58,7 +76,12 @@ export default function SettingsPage() {
 
             <div>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, color: 'var(--text)' }}>
-                <input type="checkbox" defaultChecked style={{ accentColor: 'var(--accent)', width: '16px', height: '16px' }} />
+                <input 
+                  type="checkbox" 
+                  checked={haltContradiction}
+                  onChange={e => setHaltContradiction(e.target.checked)}
+                  style={{ accentColor: 'var(--text)', width: '16px', height: '16px' }} 
+                />
                 Halt on Contradiction
               </label>
               <p style={{ fontSize: '12px', color: 'var(--dim)', marginTop: '6px', paddingLeft: '24px' }}>
