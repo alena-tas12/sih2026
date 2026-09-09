@@ -8,15 +8,33 @@ export default function ProductsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      // 1. Check for instantaneous cached data (0ms load)
+      const cachedProd = sessionStorage.getItem(`prod_${gtin}`);
+      const cachedHist = sessionStorage.getItem(`hist_${gtin}`);
+      
+      if (cachedProd && cachedHist) {
+        setProduct(JSON.parse(cachedProd));
+        setHistory(JSON.parse(cachedHist));
+        setLoading(false);
+      }
+
+      // 2. Fetch fresh data in the background (stale-while-revalidate pattern)
       try {
-        const prodRes = await fetch(`http://localhost:3000/api/products/${gtin}`);
-        const prodData = await prodRes.json();
+        const [prodRes, histRes] = await Promise.all([
+          fetch(`http://localhost:3000/api/products/${gtin}`, { keepalive: true }),
+          fetch(`http://localhost:3000/api/products/${gtin}/inspections`, { keepalive: true })
+        ]);
         
-        const histRes = await fetch(`http://localhost:3000/api/products/${gtin}/inspections`);
+        const prodData = await prodRes.json();
         const histData = await histRes.json();
         
+        // Update state with fresh data
         setProduct(prodData);
         setHistory(histData);
+        
+        // Update cache
+        sessionStorage.setItem(`prod_${gtin}`, JSON.stringify(prodData));
+        sessionStorage.setItem(`hist_${gtin}`, JSON.stringify(histData));
       } catch (e) {
         console.error('Failed to load API data:', e);
       } finally {
