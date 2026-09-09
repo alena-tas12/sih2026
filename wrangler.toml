@@ -8,4 +8,4 @@ directory = "apps/web/dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "genesis_db"
-database_id = "paste-your-d1-id-here"
+database_id = "487a2f54-bc26-4248-9f00-42e3e484d9da"
