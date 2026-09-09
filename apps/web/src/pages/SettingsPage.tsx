@@ -1,13 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function SettingsPage() {
   const [autoApprove, setAutoApprove] = useState(85);
   const [humanReview, setHumanReview] = useState(60);
   const [haltContradiction, setHaltContradiction] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const handleSave = () => {
-    alert(`Mock: Settings successfully saved!\n- Auto-Approve: ${autoApprove}%\n- Human Review: ${humanReview}%\n- Halt on Contradiction: ${haltContradiction}`);
+  useEffect(() => {
+    fetch('http://localhost:3000/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.autoApprove !== undefined) setAutoApprove(data.autoApprove);
+        if (data.humanReview !== undefined) setHumanReview(data.humanReview);
+        if (data.haltContradiction !== undefined) setHaltContradiction(data.haltContradiction);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      await fetch('http://localhost:3000/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ autoApprove, humanReview, haltContradiction })
+      });
+      alert(`Settings successfully saved to database!`);
+    } catch (e) {
+      alert('Failed to save settings to database.');
+    }
   };
+
+  if (loading) return <div className="content" style={{ color: 'var(--dim)' }}>Loading settings from DB...</div>;
 
   return (
     <section className="content">

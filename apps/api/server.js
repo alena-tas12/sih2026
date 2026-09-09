@@ -3,6 +3,8 @@ const cors = require('cors');
 const { initDb } = require('./src/data/db');
 const productRoutes = require('./src/routes/products');
 const inspectionRoutes = require('./src/routes/inspections');
+const settingsRoutes = require('./src/routes/settings');
+const dashboardRoutes = require('./src/routes/dashboard');
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api/products', productRoutes);
 app.use('/api/inspections', inspectionRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 3000;
 

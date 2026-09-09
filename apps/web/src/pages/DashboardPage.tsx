@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:3000/api/dashboard')
+      .then(res => res.json())
+      .then(data => setData(data))
+      .catch(e => console.error("Failed to load dashboard data"));
+  }, []);
+
+  if (!data) return <div className="content" style={{ color: 'var(--dim)' }}>Loading Live Dashboard...</div>;
 
   return (
     <section className="content">
@@ -18,22 +28,22 @@ export default function DashboardPage() {
       <div className="metrics">
         <div className="metric">
           <div className="metric-label">Products Tracked</div>
-          <div className="metric-value">4,892</div>
-          <div className="metric-foot">Unique GTINs</div>
+          <div className="metric-value">{data.productsTracked}</div>
+          <div className="metric-foot">Unique GTINs in Database</div>
         </div>
         <div className="metric">
           <div className="metric-label">Cross-Location Matches</div>
-          <div className="metric-value">92.4%</div>
+          <div className="metric-value">{data.matchPercentage}%</div>
           <div className="metric-foot">Consistent across all nodes</div>
         </div>
         <div className="metric">
           <div className="metric-label">Declaration Differences</div>
-          <div className="metric-value" style={{ color: 'var(--amber)' }}>143</div>
-          <div className="metric-foot">Mismatches detected</div>
+          <div className="metric-value" style={{ color: 'var(--amber)' }}>{data.totalDifferences}</div>
+          <div className="metric-foot">Mismatches flagged</div>
         </div>
         <div className="metric">
           <div className="metric-label">Pending Verification</div>
-          <div className="metric-value" style={{ color: 'var(--amber)' }}>28</div>
+          <div className="metric-value" style={{ color: 'var(--amber)' }}>{data.pendingVerifications}</div>
           <div className="metric-foot">Human review required</div>
         </div>
       </div>
@@ -42,7 +52,7 @@ export default function DashboardPage() {
         <div className="panel">
           <div className="panel-head">
             <h2 className="panel-title">Cross-Location Alerts</h2>
-            <span className="tag amber">3 Active Alerts</span>
+            <span className="tag amber">{data.activeAlerts.length} Active Alerts</span>
           </div>
           <table className="table">
             <thead>
@@ -50,32 +60,27 @@ export default function DashboardPage() {
                 <th>Product</th>
                 <th>GTIN / Barcode</th>
                 <th>Conflicting Field</th>
-                <th>Locations Affected</th>
+                <th>Location</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td className="primary-cell">Premium Basmati Rice (5kg)</td>
-                <td><span className="mono">8901030985223</span></td>
-                <td>MRP (₹150 vs ₹160)</td>
-                <td>Bangalore, Chennai</td>
-                <td><button className="outline" style={{ height: '26px', fontSize: '11px' }} onClick={() => navigate('/products')}>Review</button></td>
-              </tr>
-              <tr>
-                <td className="primary-cell">Sunrise Detergent (1kg)</td>
-                <td><span className="mono">890439001122</span></td>
-                <td>Net Qty (1kg vs 900g)</td>
-                <td>Mumbai, Pune</td>
-                <td><button className="outline" style={{ height: '26px', fontSize: '11px' }} onClick={() => navigate('/products')}>Review</button></td>
-              </tr>
-              <tr>
-                <td className="primary-cell">FreshMilk (500ml)</td>
-                <td><span className="mono">890112349911</span></td>
-                <td>Mfg Date Missing</td>
-                <td>Delhi (Hub 4)</td>
-                <td><button className="outline" style={{ height: '26px', fontSize: '11px' }} onClick={() => navigate('/products')}>Review</button></td>
-              </tr>
+              {data.activeAlerts.map((alert: any) => (
+                <tr key={alert.id}>
+                  <td className="primary-cell">{alert.product}</td>
+                  <td><span className="mono">{alert.gtin}</span></td>
+                  <td>{alert.conflictingField}</td>
+                  <td>{alert.location}</td>
+                  <td><button className="outline" style={{ height: '26px', fontSize: '11px' }} onClick={() => navigate(`/products?gtin=${alert.gtin}`)}>Review</button></td>
+                </tr>
+              ))}
+              {data.activeAlerts.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: 'var(--dim)' }}>
+                    No active cross-location alerts.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -85,27 +90,23 @@ export default function DashboardPage() {
             <h2 className="panel-title">Recent Activity</h2>
           </div>
           <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--amber)', marginTop: 6 }}></div>
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text)' }}>Difference detected: MRP</div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>GTIN 8901030985223 scanned at Bangalore</div>
+            {data.recentActivity.map((act: any) => (
+              <div key={act.id} style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ 
+                  width: 8, height: 8, borderRadius: '50%', marginTop: 6,
+                  background: act.status === 'COMPLIANT' ? 'var(--dim)' : 'var(--amber)' 
+                }}></div>
+                <div>
+                  <div style={{ fontSize: '13px', color: 'var(--text)' }}>
+                    {act.status === 'COMPLIANT' ? 'Identity Match' : 'Difference Detected'}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)' }}>GTIN {act.gtin} scanned at {act.location}</div>
+                </div>
               </div>
-            </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--dim)', marginTop: 6 }}></div>
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text)' }}>Identity Match: 45 SKUs</div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Batch scan at Coimbatore Hub</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', border: '1px solid var(--text)', marginTop: 6 }}></div>
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text)' }}>Product Master Synced</div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Updated 1,200 GTIN records from ERP</div>
-              </div>
-            </div>
+            ))}
+            {data.recentActivity.length === 0 && (
+              <div style={{ color: 'var(--dim)' }}>No recent activity.</div>
+            )}
           </div>
         </div>
       </div>
