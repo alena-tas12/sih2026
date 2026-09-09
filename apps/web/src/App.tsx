@@ -13,6 +13,7 @@ import EvidencePage from './pages/EvidencePage';
 import AuditLogPage from './pages/AuditLogPage';
 import InspectionsPage from './pages/InspectionsPage';
 import CaseReviewPage from './pages/CaseReviewPage';
+import ProductsPage from './pages/ProductsPage';
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/inspections" element={<InspectionsPage />} />
+            <Route path="/products" element={<ProductsPage />} />
             <Route path="/cases" element={<CasesPage />} />
             <Route path="/cases/:id" element={<CaseReviewPage />} />
             <Route path="/evidence" element={<EvidencePage />} />

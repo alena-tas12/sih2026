@@ -5,67 +5,72 @@ export default function DashboardPage() {
     <div className="page-content">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Compliance Overview</h1>
-          <p className="page-desc">System performance and inspection pipeline status</p>
+          <h1 className="page-title">Compliance Operations Center</h1>
+          <p className="page-desc">Cross-location product verification and compliance tracking</p>
         </div>
-        <button className="btn btn-primary">Start New Inspection</button>
+        <button className="btn btn-primary">Scan & Verify Product</button>
       </div>
 
       <div className="metric-grid">
         <div className="metric-card">
-          <div className="metric-label">Total Cases (30d)</div>
-          <div className="metric-val">12,408</div>
-          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--success-text)' }}>+14% vs last month</div>
+          <div className="metric-label">Products Tracked</div>
+          <div className="metric-val">4,892</div>
+          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>Unique GTINs</div>
         </div>
         <div className="metric-card">
-          <div className="metric-label">Pending Review</div>
-          <div className="metric-val" style={{ color: 'var(--warning-text)' }}>245</div>
-          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>Action required</div>
+          <div className="metric-label">Cross-Location Matches</div>
+          <div className="metric-val" style={{ color: 'var(--success-text)' }}>92.4%</div>
+          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>Consistent across all nodes</div>
         </div>
         <div className="metric-card">
-          <div className="metric-label">Auto-Compliant</div>
-          <div className="metric-val">82.4%</div>
-          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--success-text)' }}>Confidence &gt; 85%</div>
+          <div className="metric-label">Declaration Differences</div>
+          <div className="metric-val" style={{ color: 'var(--warning-text)' }}>143</div>
+          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>Mismatches detected</div>
         </div>
         <div className="metric-card">
-          <div className="metric-label">AI Contradictions</div>
-          <div className="metric-val" style={{ color: 'var(--danger-text)' }}>1.2%</div>
-          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>OCR vs VLM mismatch</div>
+          <div className="metric-label">Pending Verification</div>
+          <div className="metric-val" style={{ color: 'var(--danger-text)' }}>28</div>
+          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>Human review required</div>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
         <div className="panel">
-          <div className="panel-header">
-            <h2 className="panel-title">Recent Inspections</h2>
+          <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 className="panel-title">Cross-Location Alerts</h2>
+            <span className="badge warning">3 Active Alerts</span>
           </div>
           <table className="data-table">
             <thead>
               <tr>
-                <th>Case ID</th>
                 <th>Product</th>
+                <th>GTIN / Barcode</th>
+                <th>Conflicting Field</th>
+                <th>Locations Affected</th>
                 <th>Status</th>
-                <th>Confidence</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><span className="mono">CASE-104</span></td>
                 <td className="primary-cell">Premium Basmati Rice (5kg)</td>
-                <td><span className="badge warning">Needs Review</span></td>
-                <td>60%</td>
+                <td><span className="mono">8901030985223</span></td>
+                <td>MRP (₹150 vs ₹160)</td>
+                <td>Bangalore, Chennai</td>
+                <td><button className="btn btn-outline" style={{ padding: '2px 8px', fontSize: '11px' }}>Review</button></td>
               </tr>
               <tr>
-                <td><span className="mono">CASE-103</span></td>
                 <td className="primary-cell">Sunrise Detergent (1kg)</td>
-                <td><span className="badge success">Compliant</span></td>
-                <td>98%</td>
+                <td><span className="mono">890439001122</span></td>
+                <td>Net Qty (1kg vs 900g)</td>
+                <td>Mumbai, Pune</td>
+                <td><button className="btn btn-outline" style={{ padding: '2px 8px', fontSize: '11px' }}>Review</button></td>
               </tr>
               <tr>
-                <td><span className="mono">CASE-102</span></td>
                 <td className="primary-cell">FreshMilk (500ml)</td>
-                <td><span className="badge danger">Non-Compliant</span></td>
-                <td>99%</td>
+                <td><span className="mono">890112349911</span></td>
+                <td>Mfg Date Missing</td>
+                <td>Delhi (Hub 4)</td>
+                <td><button className="btn btn-outline" style={{ padding: '2px 8px', fontSize: '11px' }}>Review</button></td>
               </tr>
             </tbody>
           </table>
@@ -73,28 +78,28 @@ export default function DashboardPage() {
 
         <div className="panel">
           <div className="panel-header">
-            <h2 className="panel-title">Activity Feed</h2>
+            <h2 className="panel-title">Recent Activity</h2>
           </div>
           <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-main)', marginTop: 6 }}></div>
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>Rule amendment published</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>PC Rules 2011 (Amended 2026) active</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--warning-text)', marginTop: 6 }}></div>
               <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>Alena B. finalized CASE-104</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Marked "Manufacturer Address" as Corrected</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>Difference detected: MRP</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>GTIN 8901030985223 scanned at Bangalore</div>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success-text)', marginTop: 6 }}></div>
               <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>System synced 400 new SKUs</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>From ERP integration</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>Identity Match: 45 SKUs</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Batch scan at Coimbatore Hub</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-main)', marginTop: 6 }}></div>
+              <div>
+                <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>Product Master Synced</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Updated 1,200 GTIN records from ERP</div>
               </div>
             </div>
           </div>

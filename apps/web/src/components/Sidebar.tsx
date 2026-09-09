@@ -20,6 +20,9 @@ export default function Sidebar() {
         <NavLink to="/inspections" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           ◎ Inspections
         </NavLink>
+        <NavLink to="/products" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          📦 Product Intelligence
+        </NavLink>
         <NavLink to="/cases" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           ☰ Cases
         </NavLink>
@@ -45,7 +48,7 @@ export default function Sidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <a href="https://github.com/genesis/compliance" className="footer-link">
+        <a href="https://github.com/alena-tas12/sih2026" className="footer-link" target="_blank" rel="noreferrer">
           <span></span> GitHub Repository
         </a>
         <a href="#" className="footer-link">
