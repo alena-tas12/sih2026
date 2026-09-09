@@ -28,4 +28,9 @@ app.route('/api/locations', locationRoutes)
 app.route('/api/evidence', evidenceRoutes)
 app.route('/api/audit-logs', auditLogRoutes)
 
+// SPA Fallback: Any other route should return index.html for React Router
+app.get('*', async (c) => {
+  return c.env.ASSETS.fetch(new Request(new URL('/', c.req.url)))
+})
+
 export default app
