@@ -6,7 +6,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/dashboard')
+    fetch('/api/dashboard')
       .then(res => res.json())
       .then(data => setData(data))
       .catch(e => console.error("Failed to load dashboard data"));

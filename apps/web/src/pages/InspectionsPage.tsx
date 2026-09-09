@@ -14,12 +14,12 @@ export default function InspectionsPage() {
     e.preventDefault();
     if (!gtin) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/products/${gtin}`);
+      const res = await fetch(`/api/products/${gtin}`);
       if (res.ok) {
         const prod = await res.json();
         setProduct(prod);
         // Fetch history for comparison
-        const histRes = await fetch(`http://localhost:3000/api/products/${gtin}/inspections`);
+        const histRes = await fetch(`/api/products/${gtin}/inspections`);
         const hist = await histRes.json();
         setHistory(hist);
         setStep(2);
@@ -44,7 +44,7 @@ export default function InspectionsPage() {
   // Step 4: Submit Final Decision
   const handleDecision = async (decision: 'COMPLIANT' | 'NON_COMPLIANT' | 'REVIEW_REQUIRED') => {
     try {
-      await fetch('http://localhost:3000/api/inspections', {
+      await fetch('/api/inspections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

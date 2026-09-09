@@ -14,8 +14,8 @@ export default function ProductsPage() {
     const fetchData = async () => {
       try {
         const [prodRes, histRes] = await Promise.all([
-          fetch(`http://localhost:3000/api/products/${targetGtin}`),
-          fetch(`http://localhost:3000/api/products/${targetGtin}/inspections`)
+          fetch(`/api/products/${targetGtin}`),
+          fetch(`/api/products/${targetGtin}/inspections`)
         ]);
         
         if (prodRes.ok) {
