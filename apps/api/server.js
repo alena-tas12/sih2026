@@ -6,11 +6,18 @@ const productRoutes = require('./src/routes/products');
 const inspectionRoutes = require('./src/routes/inspections');
 const settingsRoutes = require('./src/routes/settings');
 const dashboardRoutes = require('./src/routes/dashboard');
+const locationRoutes = require('./src/routes/locations');
+const evidenceRoutes = require('./src/routes/evidence');
+const auditLogRoutes = require('./src/routes/audit-logs');
 
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ['http://localhost:5173'];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 // API routes
 app.get('/health', (req, res) => {
@@ -21,6 +28,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/inspections', inspectionRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/evidence', evidenceRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // Serve the built React frontend (production only)
 const distPath = path.join(__dirname, 'public');

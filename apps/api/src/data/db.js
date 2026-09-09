@@ -42,6 +42,32 @@ async function initDb() {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS locations (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT,
+      region TEXT,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS evidence (
+      id TEXT PRIMARY KEY,
+      inspectionId TEXT NOT NULL,
+      type TEXT NOT NULL,
+      url TEXT NOT NULL,
+      uploadedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (inspectionId) REFERENCES inspections(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS audit_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      action TEXT NOT NULL,
+      actor TEXT NOT NULL,
+      targetId TEXT,
+      details TEXT,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   // Seed initial data if empty
@@ -64,6 +90,17 @@ async function initDb() {
     await db.run(`INSERT INTO settings (key, value) VALUES ('autoApprove', '85')`);
     await db.run(`INSERT INTO settings (key, value) VALUES ('humanReview', '60')`);
     await db.run(`INSERT INTO settings (key, value) VALUES ('haltContradiction', 'true')`);
+  }
+
+  const locCount = await db.get('SELECT COUNT(*) as c FROM locations');
+  if (locCount.c === 0) {
+    await db.run(`INSERT INTO locations (id, name, type, region) VALUES ('LOC-001', 'Coimbatore Hub', 'WAREHOUSE', 'South')`);
+    await db.run(`INSERT INTO locations (id, name, type, region) VALUES ('LOC-002', 'Chennai Hub', 'DISTRIBUTION', 'South')`);
+  }
+
+  const auditCount = await db.get('SELECT COUNT(*) as c FROM audit_logs');
+  if (auditCount.c === 0) {
+    await db.run(`INSERT INTO audit_logs (action, actor, targetId, details) VALUES ('SYSTEM_INIT', 'SYSTEM', 'DB', 'Database initialized and seeded')`);
   }
 }
 
