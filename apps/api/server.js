@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const caseRoutes = require('./src/routes/cases');
+const { initDb } = require('./src/data/db');
 const productRoutes = require('./src/routes/products');
+const inspectionRoutes = require('./src/routes/inspections');
 
 const app = express();
 
@@ -12,14 +13,18 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', version: '1.0.0' });
 });
 
-app.use('/api/cases', caseRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/inspections', inspectionRoutes);
 
 const PORT = process.env.PORT || 3000;
 
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Server listening on port ${PORT}`);
+    initDb().then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server listening on port ${PORT}`);
+        });
+    }).catch(err => {
+        console.error('Failed to initialize database', err);
     });
 }
 

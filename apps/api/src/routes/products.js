@@ -1,27 +1,50 @@
 const express = require('express');
-const { products, inspections } = require('../data/seed');
-
+const { getDb } = require('../data/db');
 const router = express.Router();
 
 // Get product master by GTIN
-router.get('/:gtin', (req, res) => {
-    // 5-minute public cache for master records
-    res.set('Cache-Control', 'public, max-age=300');
-    
-    const product = products.find(p => p.gtin === req.params.gtin);
-    if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
+router.get('/:gtin', async (req, res) => {
+    try {
+        const db = getDb();
+        const product = await db.get('SELECT * FROM products WHERE gtin = ?', req.params.gtin);
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.json(product);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
-    res.json(product);
+});
+
+// Create or update product
+router.post('/', async (req, res) => {
+    try {
+        const db = getDb();
+        const { gtin, name, brand, vendor, mrp, netQuantity, manufacturerAddress } = req.body;
+        
+        await db.run(`
+            INSERT INTO products (gtin, name, brand, vendor, mrp, netQuantity, manufacturerAddress)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(gtin) DO UPDATE SET
+            name=excluded.name, brand=excluded.brand, vendor=excluded.vendor, 
+            mrp=excluded.mrp, netQuantity=excluded.netQuantity, manufacturerAddress=excluded.manufacturerAddress
+        `, [gtin, name, brand, vendor, mrp, netQuantity, manufacturerAddress]);
+
+        res.json({ success: true, gtin });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // Get cross-location inspection history for a GTIN
-router.get('/:gtin/inspections', (req, res) => {
-    // 30-second stale-while-revalidate for fast timeline loading
-    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
-    
-    const history = inspections.filter(i => i.gtin === req.params.gtin);
-    res.json(history);
+router.get('/:gtin/inspections', async (req, res) => {
+    try {
+        const db = getDb();
+        const history = await db.all('SELECT * FROM inspections WHERE gtin = ? ORDER BY createdAt DESC', req.params.gtin);
+        res.json(history);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 module.exports = router;

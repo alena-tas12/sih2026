@@ -7,34 +7,26 @@ export default function ProductsPage() {
   const gtin = '8901030985223'; // Hardcoded for prototype demonstration
 
   useEffect(() => {
+    // Read GTIN from URL query param, default to 8901030985223 if missing
+    const searchParams = new URLSearchParams(window.location.search);
+    const targetGtin = searchParams.get('gtin') || '8901030985223';
+    
     const fetchData = async () => {
-      // 1. Check for instantaneous cached data (0ms load)
-      const cachedProd = sessionStorage.getItem(`prod_${gtin}`);
-      const cachedHist = sessionStorage.getItem(`hist_${gtin}`);
-      
-      if (cachedProd && cachedHist) {
-        setProduct(JSON.parse(cachedProd));
-        setHistory(JSON.parse(cachedHist));
-        setLoading(false);
-      }
-
-      // 2. Fetch fresh data in the background (stale-while-revalidate pattern)
       try {
         const [prodRes, histRes] = await Promise.all([
-          fetch(`http://localhost:3000/api/products/${gtin}`, { keepalive: true }),
-          fetch(`http://localhost:3000/api/products/${gtin}/inspections`, { keepalive: true })
+          fetch(`http://localhost:3000/api/products/${targetGtin}`),
+          fetch(`http://localhost:3000/api/products/${targetGtin}/inspections`)
         ]);
         
-        const prodData = await prodRes.json();
-        const histData = await histRes.json();
+        if (prodRes.ok) {
+          const prodData = await prodRes.json();
+          setProduct(prodData);
+        }
         
-        // Update state with fresh data
-        setProduct(prodData);
-        setHistory(histData);
-        
-        // Update cache
-        sessionStorage.setItem(`prod_${gtin}`, JSON.stringify(prodData));
-        sessionStorage.setItem(`hist_${gtin}`, JSON.stringify(histData));
+        if (histRes.ok) {
+          const histData = await histRes.json();
+          setHistory(histData);
+        }
       } catch (e) {
         console.error('Failed to load API data:', e);
       } finally {
