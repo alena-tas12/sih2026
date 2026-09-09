@@ -156,5 +156,4 @@ select { height: 34px; background: var(--panel); color: var(--text); border: 1px
 
 @media(max-width: 1000px) { .sidebar { width: 205px; flex-basis: 205px; } .content { padding: 25px; } .topbar { padding: 0 25px; } .metrics { grid-template-columns: repeat(2, 1fr); } .grid { grid-template-columns: 1fr; } }
 @media(max-width: 680px) { .sidebar { display: none; } .topbar { height: auto; min-height: 64px; padding: 14px 16px; align-items: flex-start; } .top-actions { flex-wrap: wrap; justify-content: flex-end; } .search { width: 180px; } .content { padding: 22px 16px; } .header { align-items: flex-start; flex-direction: column; } .metrics { grid-template-columns: 1fr 1fr; gap: 9px; } .metric { padding: 14px; } .metric-value { font-size: 24px; } .filters { width: 100%; } select { flex: 1; } .panel-body { padding: 15px; } .table th, .table td { padding: 12px 14px; white-space: nowrap; } }
-. u p   {   c o l o r :   v a r ( - - t e x t ) ;   }   . w a r n   {   c o l o r :   v a r ( - - t e x t ) ;   }   . b a d   {   c o l o r :   v a r ( - - t e x t ) ;   }  
- 
+.up { color: var(--text); } .warn { color: var(--text); } .bad { color: var(--text); }
