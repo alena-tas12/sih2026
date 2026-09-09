@@ -43,6 +43,25 @@ export default function ProductsPage() {
     }, 1500);
   };
 
+  const handleSaveProduct = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const newName = formData.get('name') as string;
+    
+    try {
+      await fetch(`/api/products/${product.gtin}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+      });
+      
+      setProduct({ ...product, name: newName });
+      setShowEditor(false);
+    } catch (e) {
+      alert('Failed to update product master.');
+    }
+  };
+
   if (loading) return <div className="content" style={{ color: 'var(--dim)' }}>Loading Product Master...</div>;
   if (!product) return <div className="content" style={{ color: 'var(--red)' }}>Failed to connect to API Backend.</div>;
 
@@ -55,14 +74,14 @@ export default function ProductsPage() {
               <h2 className="panel-title">Edit Product Master</h2>
               <button className="icon-btn" style={{ border: 'none' }} onClick={() => setShowEditor(false)}>X</button>
             </div>
-            <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <form onSubmit={handleSaveProduct} className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div><label style={{ fontSize: '11px', color: 'var(--dim)' }}>GTIN</label><input type="text" className="search" style={{ width: '100%' }} defaultValue={product.gtin} readOnly /></div>
-              <div><label style={{ fontSize: '11px', color: 'var(--dim)' }}>Product Name</label><input type="text" className="search" style={{ width: '100%' }} defaultValue={product.name} /></div>
+              <div><label style={{ fontSize: '11px', color: 'var(--dim)' }}>Product Name</label><input name="name" type="text" className="search" style={{ width: '100%' }} defaultValue={product.name} /></div>
               <div style={{ display: 'flex', gap: '14px', marginTop: '8px' }}>
-                <button className="outline" style={{ flex: 1 }} onClick={() => setShowEditor(false)}>Cancel</button>
-                <button className="primary" style={{ flex: 1 }} onClick={() => setShowEditor(false)}>Save Changes</button>
+                <button type="button" className="outline" style={{ flex: 1 }} onClick={() => setShowEditor(false)}>Cancel</button>
+                <button type="submit" className="primary" style={{ flex: 1 }}>Save Changes</button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}

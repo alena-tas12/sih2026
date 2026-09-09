@@ -106,17 +106,35 @@ export default function InspectionsPage() {
             <div className="panel">
               <div className="panel-head"><h2 className="panel-title">Scan Product Barcode</h2></div>
               <div className="panel-body">
-                <form onSubmit={handleScan} style={{ display: 'flex', gap: '12px' }}>
+                <form onSubmit={handleScan} style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                   <input 
                     className="search" 
                     placeholder="Scan or enter GTIN (e.g. 8901030985223)" 
                     value={gtin} 
                     onChange={e => setGtin(e.target.value)}
-                    style={{ width: '300px' }}
+                    style={{ flex: 1 }}
                     autoFocus
                   />
                   <button type="submit" className="primary">Lookup Product</button>
                 </form>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={() => alert('Mock: Opening File Dialog for Upload')}>
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>📁</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>Upload Image</div>
+                    <div style={{ fontSize: '11px', color: 'var(--dim)', marginTop: '4px' }}>Upload barcode or product image</div>
+                  </div>
+                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={() => alert('Mock: Connecting to WebSocket Webcam Stream...')}>
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>🎥</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>Live Webcam Scan</div>
+                    <div style={{ fontSize: '11px', color: 'var(--dim)', marginTop: '4px' }}>Real-time WS barcode scanning</div>
+                  </div>
+                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={() => alert('Mock: Opening Camera for Snapshot')}>
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>📸</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>Camera Capture</div>
+                    <div style={{ fontSize: '11px', color: 'var(--dim)', marginTop: '4px' }}>Capture section for evidence</div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -139,7 +157,7 @@ export default function InspectionsPage() {
               <div className="panel-head"><h2 className="panel-title">Package Evidence (OCR)</h2></div>
               <div className="panel-body">
                 <div style={{ height: '160px', background: 'var(--bg)', border: '1px dashed var(--line2)', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dim)', cursor: 'pointer' }} onClick={handleUpload}>
-                  Click to simulate camera capture & OCR extraction...
+                  Click to simulate OCR extraction from captured evidence...
                 </div>
               </div>
             </div>

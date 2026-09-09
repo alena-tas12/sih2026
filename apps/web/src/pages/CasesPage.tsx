@@ -1,24 +1,34 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const casesData = [
-  { id: 'CASE-2026-0104', product: 'Premium Basmati Rice (5 kg)', org: 'ABC Foods', date: '09 Sep 2026', status: 'REVIEW_REQUIRED', compliant: 2, review: 1, total: 3 },
-  { id: 'CASE-2026-0103', product: 'Sunrise Detergent (1 kg)', org: 'Sunrise LLC', date: '08 Sep 2026', status: 'COMPLIANT', compliant: 4, review: 0, total: 4 },
-  { id: 'CASE-2026-0102', product: 'FreshMilk Toned Milk (500 ml)', org: 'DairyCorp', date: '07 Sep 2026', status: 'NON_COMPLIANT', compliant: 2, review: 0, total: 5 },
-  { id: 'CASE-2026-0101', product: 'QuickBite Instant Noodles (70 g)', org: 'QuickBite', date: '07 Sep 2026', status: 'COMPLIANT', compliant: 5, review: 0, total: 5 },
-  { id: 'CASE-2026-0100', product: 'PureGold Cooking Oil (1 L)', org: 'PureGold', date: '06 Sep 2026', status: 'REVIEW_REQUIRED', compliant: 3, review: 2, total: 5 },
-];
 
 export default function CasesPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('All Statuses');
+  const [casesData, setCasesData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/inspections')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCasesData(data);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const filteredCases = useMemo(() => {
     return casesData.filter(c => {
-      const matchesSearch = c.id.toLowerCase().includes(search.toLowerCase()) || 
-                            c.product.toLowerCase().includes(search.toLowerCase()) ||
-                            c.org.toLowerCase().includes(search.toLowerCase());
+      const productName = c.productName || '';
+      const orgName = c.orgName || '';
+      const id = c.id || '';
+      
+      const matchesSearch = id.toLowerCase().includes(search.toLowerCase()) || 
+                            productName.toLowerCase().includes(search.toLowerCase()) ||
+                            orgName.toLowerCase().includes(search.toLowerCase());
       
       const matchesStatus = filterStatus === 'All Statuses' ||
                             (filterStatus === 'Compliant' && c.status === 'COMPLIANT') ||
@@ -27,7 +37,9 @@ export default function CasesPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [search, filterStatus]);
+  }, [search, filterStatus, casesData]);
+
+  if (loading) return <div className="content" style={{ color: 'var(--dim)' }}>Loading cases from backend...</div>;
 
   return (
     <section className="content">
