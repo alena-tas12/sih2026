@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const caseRoutes = require('./src/routes/cases');
+const productRoutes = require('./src/routes/products');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/cases', caseRoutes);
+app.use('/api/products', productRoutes);
 
 const PORT = process.env.PORT || 3000;
 

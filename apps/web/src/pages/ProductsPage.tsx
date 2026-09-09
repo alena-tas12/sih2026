@@ -1,12 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ProductsPage() {
+  const [product, setProduct] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const gtin = '8901030985223'; // Hardcoded for prototype demonstration
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const prodRes = await fetch(`http://localhost:3000/api/products/${gtin}`);
+        const prodData = await prodRes.json();
+        
+        const histRes = await fetch(`http://localhost:3000/api/products/${gtin}/inspections`);
+        const histData = await histRes.json();
+        
+        setProduct(prodData);
+        setHistory(histData);
+      } catch (e) {
+        console.error('Failed to load API data:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) return <div className="content" style={{ color: 'var(--dim)' }}>Loading Product Master...</div>;
+  if (!product) return <div className="content" style={{ color: 'var(--red)' }}>Failed to connect to API Backend.</div>;
+
   return (
     <section className="content">
       <div className="header">
         <div>
           <div className="eyebrow">Product Intelligence</div>
-          <h1>Premium Basmati Rice</h1>
+          <h1>{product.name}</h1>
           <p className="subtitle">Master catalog identity and cross-location history</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -23,21 +51,25 @@ export default function ProductsPage() {
             <h2 className="panel-title">Master Identity</h2>
           </div>
           <div className="panel-body">
-            <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>ABC Foods</div>
-            <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '16px' }}>Verified FMCG Vendor</div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>{product.brand}</div>
+            <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '16px' }}>{product.vendor}</div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
               <div>
                 <div style={{ color: 'var(--muted)', fontSize: '11px', textTransform: 'uppercase' }}>GTIN / Barcode</div>
-                <div className="mono" style={{ color: 'var(--text)' }}>8901030985223</div>
+                <div className="mono" style={{ color: 'var(--text)' }}>{product.gtin}</div>
               </div>
               <div>
                 <div style={{ color: 'var(--muted)', fontSize: '11px', textTransform: 'uppercase' }}>Registered Pack Size</div>
-                <div style={{ color: 'var(--text)' }}>500 g</div>
+                <div style={{ color: 'var(--text)' }}>{product.netQuantity}</div>
+              </div>
+              <div>
+                <div style={{ color: 'var(--muted)', fontSize: '11px', textTransform: 'uppercase' }}>Registered MRP</div>
+                <div style={{ color: 'var(--text)' }}>₹{product.mrp}</div>
               </div>
               <div>
                 <div style={{ color: 'var(--muted)', fontSize: '11px', textTransform: 'uppercase' }}>Manufacturer Address</div>
-                <div style={{ color: 'var(--text)' }}>ABC Foods India Pvt Ltd.</div>
+                <div style={{ color: 'var(--text)' }}>{product.manufacturerAddress}</div>
               </div>
             </div>
           </div>
@@ -52,25 +84,38 @@ export default function ProductsPage() {
             {/* Timeline Line */}
             <div style={{ position: 'absolute', left: '15px', top: '24px', bottom: '24px', width: '2px', background: 'var(--line)' }}></div>
             
-            {[
-              { date: 'Today, 14:30', title: 'Human Review Requested', desc: 'Case CASE-105 marked for manual review.', icon: 'M', color: 'var(--text)' },
-              { date: 'Today, 14:25', title: 'Difference Detected', desc: 'Bangalore Hub reported MRP ₹160 (Mismatch from Master).', icon: '!', color: 'var(--amber)' },
-              { date: 'Sep 08, 09:15', title: 'Identity & Declaration Match', desc: 'Chennai Hub scanned product. MRP ₹150 / 500g matched.', icon: 'V', color: 'var(--dim)' },
-              { date: 'Sep 05, 11:00', title: 'Identity & Declaration Match', desc: 'Coimbatore Hub scanned product. MRP ₹150 / 500g matched.', icon: 'V', color: 'var(--dim)' },
-              { date: 'Sep 01, 00:00', title: 'Product Master Created', desc: 'Synced from central ERP via API.', icon: '+', color: 'var(--dim)' },
-            ].map((event, i) => (
+            <div style={{ position: 'relative', marginBottom: '32px' }}>
+              <div style={{ 
+                position: 'absolute', left: '-27px', top: '2px', 
+                width: '20px', height: '20px', borderRadius: '50%', 
+                background: 'var(--bg)', border: `1px solid var(--line)`,
+                color: 'var(--dim)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '10px', fontWeight: 600
+              }}>+</div>
+              <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>Master Created</div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>Product Master Synced</div>
+              <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>Synced from central ERP via API.</div>
+            </div>
+
+            {history.map((insp, i) => (
               <div key={i} style={{ position: 'relative', marginBottom: '32px' }}>
                 <div style={{ 
                   position: 'absolute', left: '-27px', top: '2px', 
                   width: '20px', height: '20px', borderRadius: '50%', 
-                  background: 'var(--bg)', border: `1px solid ${event.color === 'var(--text)' ? '#fff' : 'var(--line)'}`,
-                  color: event.color,
+                  background: 'var(--bg)', border: `1px solid ${insp.status === 'COMPLIANT' ? 'var(--line)' : 'var(--amber)'}`,
+                  color: insp.status === 'COMPLIANT' ? 'var(--dim)' : 'var(--amber)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '10px', fontWeight: 600
-                }}>{event.icon}</div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>{event.date}</div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{event.title}</div>
-                <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>{event.desc}</div>
+                }}>{insp.status === 'COMPLIANT' ? 'V' : '!'}</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>{new Date(insp.date).toLocaleString()}</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{insp.status === 'COMPLIANT' ? 'Identity & Declaration Match' : 'Difference Detected'}</div>
+                <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>
+                  {insp.location} scanned product. 
+                  {insp.status === 'COMPLIANT' 
+                    ? ` MRP ₹${insp.extractedMrp} / ${insp.extractedQty} matched.`
+                    : ` Reported MRP ₹${insp.extractedMrp} (Mismatch from Master).`}
+                </div>
               </div>
             ))}
           </div>
