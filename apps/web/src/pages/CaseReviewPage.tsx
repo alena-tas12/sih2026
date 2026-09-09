@@ -88,14 +88,74 @@ export default function CaseReviewPage() {
             </div>
             
             <div style={{ marginTop: '20px' }}>
-                    )}
-                  </div>
-                )}
+              <h3 style={{ fontSize: '11px', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.08em' }}>Extraction Metadata</h3>
+              <div className="table-wrap">
+                <table className="table">
+                  <tbody>
+                    <tr><td>OCR Engine</td><td className="primary-cell">PaddleOCR v4</td></tr>
+                    <tr><td>Vision Model</td><td className="primary-cell">Donut (OCR-free)</td></tr>
+                  </tbody>
+                </table>
               </div>
-            ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Rule Engine Evaluation */}
+        <div className="panel">
+          <div className="panel-head">
+            <h2 className="panel-title">Deterministic Rule Evaluation</h2>
+          </div>
+          <div className="panel-body" style={{ padding: '0' }}>
+            <div className="list">
+              {data.extractions.map(ext => (
+                <div key={ext.id} className="row" style={{ padding: '20px', borderBottom: '1px solid var(--line)', flexDirection: 'column' }}>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '14px' }}>{ext.fieldName}</div>
+                    <StatusBadge status={ext.ruleResult} />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '8px', fontSize: '13px', marginBottom: '12px' }}>
+                    <span style={{ color: 'var(--muted)' }}>Extracted</span>
+                    <span className="mono" style={{ color: 'var(--text)' }}>{ext.normValue}</span>
+                    <span style={{ color: 'var(--muted)' }}>Confidence</span>
+                    <span>
+                      <span className={ext.confidence >= 85 ? 'tag green' : 'tag amber'} style={{ padding: '2px 6px', fontSize: '11px' }}>
+                        {ext.confidence}%
+                      </span>
+                    </span>
+                    <span style={{ color: 'var(--muted)' }}>Rule</span>
+                    <span style={{ color: 'var(--text)' }}>{ext.ruleCitation}</span>
+                  </div>
+
+                  <div style={{ padding: '12px', background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: '6px', fontSize: '12px', color: 'var(--dim)' }}>
+                    <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Engine Log:</span> {ext.reason}
+                  </div>
+
+                  {ext.ruleResult === 'NEEDS_REVIEW' && (
+                    <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+                      <button 
+                        className={`btn ${reviewActions[ext.id] === 'approve' ? 'primary' : 'outline'}`}
+                        onClick={() => handleReview(ext.id, 'approve')}
+                      >
+                        Override: Approve
+                      </button>
+                      <button 
+                        className={`btn ${reviewActions[ext.id] === 'reject' ? 'btn-danger' : 'outline'}`}
+                        onClick={() => handleReview(ext.id, 'reject')}
+                        style={reviewActions[ext.id] === 'reject' ? { background: 'var(--danger-text)', color: '#fff', borderColor: 'var(--danger-text)' } : {}}
+                      >
+                        Confirm Violation
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
