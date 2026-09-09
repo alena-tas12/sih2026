@@ -1,8 +1,10 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Topbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  
   const path = location.pathname === '/' ? 'Overview' : 
                location.pathname.slice(1).charAt(0).toUpperCase() + location.pathname.slice(2);
 
@@ -13,7 +15,7 @@ export default function Topbar() {
         <input className="search" placeholder="Search cases, rules, evidence…" />
         <button className="icon-btn">⌘</button>
         <button className="icon-btn">◔</button>
-        <button className="primary">New inspection</button>
+        <button className="primary" onClick={() => navigate('/inspections')}>New inspection</button>
       </div>
     </header>
   );
