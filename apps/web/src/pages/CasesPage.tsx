@@ -13,63 +13,66 @@ export default function CasesPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="page-content">
-      <div className="page-header">
+    <section className="content">
+      <div className="header">
         <div>
-          <h1 className="page-title">Inspection Cases</h1>
-          <p className="page-desc">Complete audit log of all processed compliance scans.</p>
+          <div className="eyebrow">Workspace</div>
+          <h1>Inspection Cases</h1>
+          <p className="subtitle">Complete audit log of all processed compliance scans.</p>
         </div>
-        <button className="btn btn-primary">+ New Inspection</button>
+        <button className="primary">New inspection</button>
       </div>
 
-      <div className="panel">
-        <div className="panel-header" style={{ display: 'flex', gap: '16px' }}>
-          <input type="text" placeholder="Search cases..." style={{ flex: 1, background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '8px 12px', borderRadius: '4px', fontSize: '13px' }} />
-          <select style={{ background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', padding: '8px 12px', borderRadius: '4px', fontSize: '13px' }}>
+      <div className="panel bottom">
+        <div className="panel-head" style={{ gap: '16px' }}>
+          <input type="text" className="search" placeholder="Search cases by ID or Product..." style={{ flex: 1, maxWidth: 'none' }} />
+          <select>
             <option>All Statuses</option>
             <option>Compliant</option>
             <option>Needs Review</option>
             <option>Non-Compliant</option>
           </select>
         </div>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Case ID</th>
-              <th>Product</th>
-              <th>Organization</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Fields</th>
-            </tr>
-          </thead>
-          <tbody>
-            {casesData.map(c => {
-              const statusMap: Record<string, string> = {
-                COMPLIANT: 'success',
-                NON_COMPLIANT: 'danger',
-                REVIEW_REQUIRED: 'warning'
-              };
-              return (
-                <tr key={c.id} onClick={() => navigate(`/cases/${c.id}`)} style={{ cursor: 'pointer' }}>
-                  <td><span className="mono">{c.id}</span></td>
-                  <td className="primary-cell">{c.product}</td>
-                  <td>{c.org}</td>
-                  <td>{c.date}</td>
-                  <td>
-                    <span className={`badge ${statusMap[c.status]}`}>{c.status.replace('_', ' ')}</span>
-                  </td>
-                  <td>
-                    <span style={{ color: 'var(--success-text)', fontWeight: 600 }}>{c.compliant}</span>
-                    {c.review > 0 && <span style={{ color: 'var(--warning-text)', fontWeight: 600 }}> +{c.review}</span>}
-                    <span style={{ color: 'var(--text-muted)' }}> / {c.total}</span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Product</th>
+                <th>Organization</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Fields</th>
+              </tr>
+            </thead>
+            <tbody>
+              {casesData.map(c => {
+                const statusMap: Record<string, string> = {
+                  COMPLIANT: 'green',
+                  NON_COMPLIANT: 'danger',
+                  REVIEW_REQUIRED: 'amber'
+                };
+                return (
+                  <tr key={c.id} onClick={() => navigate(`/cases/${c.id}`)} style={{ cursor: 'pointer' }}>
+                    <td><span className="mono">{c.id}</span></td>
+                    <td className="primary-cell">{c.product}</td>
+                    <td>{c.org}</td>
+                    <td>{c.date}</td>
+                    <td>
+                      <span className={`tag ${statusMap[c.status]}`}>{c.status.replace('_', ' ')}</span>
+                    </td>
+                    <td>
+                      <span style={{ color: 'var(--green)', fontWeight: 600 }}>{c.compliant}</span>
+                      {c.review > 0 && <span style={{ color: 'var(--amber)', fontWeight: 600 }}> +{c.review}</span>}
+                      <span style={{ color: 'var(--dim)' }}> / {c.total}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

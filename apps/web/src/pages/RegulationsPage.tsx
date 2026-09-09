@@ -2,66 +2,101 @@ import React from 'react';
 
 export default function RegulationsPage() {
   return (
-    <div className="page-content">
-      <div className="page-header">
+    <section className="content">
+      <div className="header">
         <div>
-          <h1 className="page-title">Regulatory Knowledge Base</h1>
-          <p className="page-desc">Version-controlled Legal Metrology & FSSAI temporal rules.</p>
+          <div className="eyebrow">System</div>
+          <h1>Regulatory Knowledge Base</h1>
+          <p className="subtitle">Temporal rule engine mapping legal text to deterministic logic constraints.</p>
         </div>
-        <button className="btn btn-primary">+ Add Amendment</button>
+        <div className="filters">
+          <input className="search" placeholder="Search rules or laws..." />
+          <button className="primary">+ Add Rule</button>
+        </div>
       </div>
 
-      <div className="panel">
-        <div className="panel-header">
-          <h2 className="panel-title">Active Rules Database</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px' }}>
+        
+        {/* Rules Table */}
+        <div className="panel">
+          <div className="panel-head">
+            <div className="panel-title">Active Constraint Rules</div>
+            <span className="tag green">Live</span>
+          </div>
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Rule ID</th>
+                  <th>Legal Reference</th>
+                  <th>Field</th>
+                  <th>Constraint Logic</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="mono">RULE-PC-01</td>
+                  <td className="primary-cell">PC Rules 2011, Sec 6(1)(a)</td>
+                  <td>Net Quantity</td>
+                  <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{`value > 0 AND unit IN ('g','kg','ml','L')`}</td>
+                  <td><span className="tag green">Active</span></td>
+                </tr>
+                <tr>
+                  <td className="mono">RULE-PC-02</td>
+                  <td className="primary-cell">PC Rules 2011, Sec 6(1)(e)</td>
+                  <td>MRP</td>
+                  <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{`format MATCHES '^Rs\\.\\s?\\d+(\\.\\d{1,2})?$'`}</td>
+                  <td><span className="tag green">Active</span></td>
+                </tr>
+                <tr>
+                  <td className="mono">RULE-PC-03</td>
+                  <td className="primary-cell">PC Rules 2011, Sec 6(1)(b)</td>
+                  <td>Mfg Address</td>
+                  <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{`EXISTS(value) AND length(value) > 10`}</td>
+                  <td><span className="tag green">Active</span></td>
+                </tr>
+                <tr>
+                  <td className="mono">RULE-FSSAI-04</td>
+                  <td className="primary-cell">FSSAI Packaging Regs</td>
+                  <td>Veg/Non-Veg Logo</td>
+                  <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{`DETECT_LOGO(type='veg_or_nonveg', conf > 80)`}</td>
+                  <td><span className="tag amber">Draft</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Rule ID</th>
-              <th>Description</th>
-              <th>Req Type</th>
-              <th>Effective From</th>
-              <th>Effective To</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span className="mono">PC-2011-6-1-a</span></td>
-              <td className="primary-cell">Maximum Retail Price (MRP) Declaration</td>
-              <td><span className="badge neutral">PRESENCE</span></td>
-              <td>01 Jan 2011</td>
-              <td style={{ color: 'var(--text-muted)' }}>None</td>
-              <td><span className="badge success">Active</span></td>
-            </tr>
-            <tr>
-              <td><span className="mono">PC-2011-6-1-b</span></td>
-              <td className="primary-cell">Net Quantity Declaration (Numeric)</td>
-              <td><span className="badge neutral">NUMERIC</span></td>
-              <td>01 Jan 2011</td>
-              <td style={{ color: 'var(--text-muted)' }}>None</td>
-              <td><span className="badge success">Active</span></td>
-            </tr>
-            <tr>
-              <td><span className="mono">PC-2023-AMND-1</span></td>
-              <td className="primary-cell">Unit Sale Price (USP) Formatting</td>
-              <td><span className="badge neutral">FORMAT</span></td>
-              <td>01 Apr 2024</td>
-              <td style={{ color: 'var(--text-muted)' }}>None</td>
-              <td><span className="badge success">Active</span></td>
-            </tr>
-            <tr style={{ opacity: 0.5 }}>
-              <td><span className="mono">PC-2009-OLD-1</span></td>
-              <td className="primary-cell">Legacy Packaging Standard</td>
-              <td><span className="badge neutral">FORMAT</span></td>
-              <td>01 Jan 2009</td>
-              <td>31 Dec 2010</td>
-              <td><span className="badge neutral">Superseded</span></td>
-            </tr>
-          </tbody>
-        </table>
+
+        {/* Rule Editor Info */}
+        <div className="panel" style={{ alignSelf: 'start' }}>
+          <div className="panel-head">
+            <h2 className="panel-title">Temporal Context</h2>
+          </div>
+          <div className="panel-body">
+            <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>
+              The engine evaluates rules based on the package's date of manufacture. 
+              Changes to the legal code are versioned temporally.
+            </p>
+            <div className="list">
+              <div className="row">
+                <div className="row-main">
+                  <div className="row-title">PC Rules 2011 (v3)</div>
+                  <div className="row-sub">Effective: 01 Jan 2025</div>
+                </div>
+                <span className="tag green">Active</span>
+              </div>
+              <div className="row">
+                <div className="row-main">
+                  <div className="row-title">PC Rules 2011 (v2)</div>
+                  <div className="row-sub">Ended: 31 Dec 2024</div>
+                </div>
+                <span className="tag">Archive</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,46 +1,71 @@
 import React from 'react';
 
-const auditData = [
-  { id: 'AUD-092', time: '2026-09-09 18:45:12', user: 'Alena B.', action: 'MANUAL_CORRECTION', details: 'Updated Manufacturer Address confidence 60% -> 100% (Manual verify)', case: 'CASE-104' },
-  { id: 'AUD-091', time: '2026-09-09 18:42:05', user: 'System (Rule Engine)', action: 'RULE_EVALUATION', details: 'Applied PC Rules 2011 to CASE-104', case: 'CASE-104' },
-  { id: 'AUD-090', time: '2026-09-09 18:41:50', user: 'System (Vision Worker)', action: 'EXTRACTION_COMPLETE', details: 'PaddleOCR + VLM completed extraction with 1 contradiction', case: 'CASE-104' },
-  { id: 'AUD-089', time: '2026-09-09 18:41:02', user: 'Alena B.', action: 'INSPECTION_STARTED', details: 'Uploaded package image for ABC Foods Rice', case: 'CASE-104' },
-];
-
 export default function AuditLogPage() {
   return (
-    <div className="page-content">
-      <div className="page-header">
+    <section className="content">
+      <div className="header">
         <div>
-          <h1 className="page-title">System Audit Log</h1>
-          <p className="page-desc">Immutable chronological record of all system events and human interventions.</p>
+          <div className="eyebrow">System</div>
+          <h1>Audit Log</h1>
+          <p className="subtitle">Immutable chronological ledger of system and human actions.</p>
         </div>
+        <button className="outline">Export CSV</button>
       </div>
 
-      <div className="panel">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>User / Service</th>
-              <th>Action Type</th>
-              <th>Details</th>
-              <th>Ref</th>
-            </tr>
-          </thead>
-          <tbody>
-            {auditData.map(log => (
-              <tr key={log.id}>
-                <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{log.time}</td>
-                <td className="primary-cell">{log.user}</td>
-                <td><span className="badge neutral">{log.action}</span></td>
-                <td>{log.details}</td>
-                <td><span className="mono" style={{ color: 'var(--accent-main)' }}>{log.case}</span></td>
+      <div className="panel bottom">
+        <div className="panel-head" style={{ gap: '16px' }}>
+          <input type="text" className="search" placeholder="Search events or users..." style={{ flex: 1, maxWidth: 'none' }} />
+          <select>
+            <option>All Event Types</option>
+            <option>Human Action</option>
+            <option>System Action</option>
+            <option>Rule Update</option>
+          </select>
+        </div>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Actor</th>
+                <th>Event Type</th>
+                <th>Description</th>
+                <th>Reference</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="mono" style={{ color: 'var(--dim)' }}>2026-09-09 14:32:01</td>
+                <td><span className="tag amber">Alena B</span></td>
+                <td>CASE_OVERRIDE</td>
+                <td>Manually approved "Net Quantity" field despite OCR contradiction.</td>
+                <td className="mono"><a href="#" style={{ color: 'var(--accent)' }}>CASE-2026-0104</a></td>
+              </tr>
+              <tr>
+                <td className="mono" style={{ color: 'var(--dim)' }}>2026-09-09 14:30:15</td>
+                <td><span className="tag">SYSTEM (OCR)</span></td>
+                <td>EXTRACTION_HALT</td>
+                <td>Contradiction detected between PaddleOCR and Donut VLM.</td>
+                <td className="mono"><a href="#" style={{ color: 'var(--accent)' }}>CASE-2026-0104</a></td>
+              </tr>
+              <tr>
+                <td className="mono" style={{ color: 'var(--dim)' }}>2026-09-09 10:15:00</td>
+                <td><span className="tag">SYSTEM (CRON)</span></td>
+                <td>RULE_SYNC</td>
+                <td>Updated local Legal Metrology ruleset from upstream master.</td>
+                <td className="mono"><a href="#" style={{ color: 'var(--accent)' }}>SYNC-992</a></td>
+              </tr>
+              <tr>
+                <td className="mono" style={{ color: 'var(--dim)' }}>2026-09-08 19:42:11</td>
+                <td><span className="tag amber">Alena B</span></td>
+                <td>POLICY_UPDATE</td>
+                <td>Changed Auto-Approve Threshold from 80% to 85%.</td>
+                <td className="mono"><a href="#" style={{ color: 'var(--accent)' }}>CFG-SET</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
