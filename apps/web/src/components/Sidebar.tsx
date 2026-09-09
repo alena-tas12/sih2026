@@ -4,59 +4,62 @@ import { NavLink } from 'react-router-dom';
 export default function Sidebar() {
   return (
     <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="logo-mark">G</div>
-        <div className="workspace-select">
-          Genesis Compliance
-          <span className="version">v1.2.0-OSS</span>
+      <div className="brand">
+        <div className="mark">G</div>
+        <div>
+          <strong>Genesis Compliance</strong>
+          <small>OPEN SOURCE · v1.2.0</small>
         </div>
       </div>
-      
-      <div className="nav-group">
+      <div className="workspace">
+        <span>Workspace</span>
+        Genesis Operations
+      </div>
+      <nav className="nav">
         <div className="nav-label">Workspace</div>
         <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end>
-          ◱ Overview
+          <span className="ico">⌂</span>Overview
         </NavLink>
         <NavLink to="/inspections" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          ◎ Inspections
+          <span className="ico">◈</span>Inspections
         </NavLink>
         <NavLink to="/products" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          📦 Product Intelligence
+          <span className="ico">📦</span>Product Intel
         </NavLink>
         <NavLink to="/cases" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          ☰ Cases
+          <span className="ico">▤</span>Cases
         </NavLink>
         <NavLink to="/evidence" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          ▤ Evidence Library
+          <span className="ico">▧</span>Evidence Library
         </NavLink>
-      </div>
-
-      <div className="nav-group">
-        <div className="nav-label">System</div>
+        
+        <div className="nav-label" style={{ marginTop: '22px' }}>System</div>
         <NavLink to="/regulations" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          § Regulations
+          <span className="ico">§</span>Regulations
         </NavLink>
         <NavLink to="/analytics" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          📈 Analytics
+          <span className="ico">⌁</span>Analytics
         </NavLink>
         <NavLink to="/audit" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          ⌚ Audit Log
+          <span className="ico">◷</span>Audit Log
         </NavLink>
         <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-          ⚙ Settings
+          <span className="ico">⚙</span>Settings
         </NavLink>
-      </div>
-
-      <div className="sidebar-footer">
-        <a href="https://github.com/alena-tas12/sih2026" className="footer-link" target="_blank" rel="noreferrer">
-          <span></span> GitHub Repository
+      </nav>
+      <div className="sidebar-bottom">
+        <a className="oss" href="https://github.com/alena-tas12/sih2026" target="_blank" rel="noreferrer">
+          <span>◉</span> GitHub Repository ↗
         </a>
-        <a href="#" className="footer-link">
-          <span>📖</span> Documentation
+        <a className="oss" href="#">
+          <span>?</span> Documentation
         </a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', marginTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
-          <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#3f3f46', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff' }}>AB</div>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>alena@genesis.io</span>
+        <div className="user">
+          <div className="avatar">AB</div>
+          <div>
+            Alena B
+            <small>Inspector · Online</small>
+          </div>
         </div>
       </div>
     </aside>

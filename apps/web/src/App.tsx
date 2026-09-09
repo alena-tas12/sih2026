@@ -18,9 +18,9 @@ import ProductsPage from './pages/ProductsPage';
 export default function App() {
   return (
     <Router>
-      <div className="app-shell">
+      <div className="app">
         <Sidebar />
-        <div className="main-wrapper">
+        <main className="main">
           <Topbar />
           <Routes>
             <Route path="/" element={<DashboardPage />} />
@@ -34,7 +34,7 @@ export default function App() {
             <Route path="/audit" element={<AuditLogPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
-        </div>
+        </main>
       </div>
     </Router>
   );
