@@ -1,0 +1,20 @@
+[
+    { 
+        "id": "req_1_2025", 
+        "field_name": "net_quantity", 
+        "requirement_type": "NUMERIC", 
+        "severity": "HIGH", 
+        "effective_from": "2025-01-01T00:00:00Z", 
+        "effective_to": "2026-12-31T23:59:59Z", 
+        "jurisdiction": ["IN"] 
+    },
+    { 
+        "id": "req_1_2027", 
+        "field_name": "net_quantity", 
+        "requirement_type": "NUMERIC", 
+        "severity": "HIGH", 
+        "effective_from": "2027-01-01T00:00:00Z", 
+        "effective_to": null, 
+        "jurisdiction": ["IN"] 
+    }
+]
