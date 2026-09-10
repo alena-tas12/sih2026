@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function InspectionsPage() {
@@ -7,19 +7,133 @@ export default function InspectionsPage() {
   const [product, setProduct] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [extractedData, setExtractedData] = useState<any>(null);
+  const [uploading, setUploading] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
   const navigate = useNavigate();
+  const location = window.location;
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // If a gtin query param is present, prefill and perform lookup
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const q = params.get('gtin');
+      if (q) {
+        setGtin(q);
+        // trigger scan flow
+        (async () => {
+          try {
+            setLookupLoading(true);
+            const res = await fetch(`/api/products/${encodeURIComponent(q)}`);
+            if (res.ok) {
+              const prod = await res.json();
+              setProduct(prod);
+              const histRes = await fetch(`/api/products/${q}/inspections`);
+              const hist = await histRes.json();
+              setHistory(hist);
+              setStep(2);
+            } else {
+              alert('Product not found in Master Database.');
+            }
+          } catch (e) {
+            alert('Failed to connect to backend API.');
+          } finally {
+            setLookupLoading(false);
+          }
+        })();
+      }
+    } catch (e) {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function uploadImage(file: File | Blob) {
+    if (!gtin) {
+      alert('Please provide/scan a GTIN first.');
+      return;
+    }
+    setUploading(true);
+    try {
+      // convert file/blob to base64
+      const blob = file instanceof File ? file : new File([file], 'evidence.jpg', { type: 'image/jpeg' })
+      const b64 = await (async (b: Blob) => {
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onerror = () => reject(new Error('Failed to read file'))
+          reader.onload = () => {
+            const res = reader.result as string
+            // data:*;base64,xxxxx
+            const parts = res.split(',')
+            resolve(parts[1])
+          }
+          reader.readAsDataURL(b)
+        })
+      })(blob)
+
+      const payload = {
+        inspectionId: gtin || null,
+        type: 'CAMERA',
+        filename: (file as File).name || 'evidence.jpg',
+        base64: b64
+      }
+
+      const res = await fetch('/api/evidence/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      if (res.ok) {
+        const body = await res.json()
+        setExtractedData(body.extracted || { mrp: body.mrp || 'N/A', qty: body.qty || 'N/A' })
+        setStep(3)
+      } else {
+        alert('Failed to upload evidence.')
+      }
+    } catch (e) {
+      alert('Upload failed: ' + (e as any).message || String(e))
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  function triggerFileDialog() {
+    fileInputRef.current?.click();
+  }
+
+  async function onFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    await uploadImage(f);
+  }
+
+  async function captureAndUpload() {
+    // If running in Capacitor native with Camera plugin, use it; otherwise fallback to file input
+    const Cap = (window as any).Capacitor;
+    if (Cap && Cap.Plugins && Cap.Plugins.Camera && Cap.Plugins.Camera.getPhoto) {
+      try {
+        const photo = await Cap.Plugins.Camera.getPhoto({ quality: 80, resultType: 'base64', allowEditing: false });
+        const base64 = photo.base64String;
+        const dataUrl = 'data:image/jpeg;base64,' + base64;
+        const blob = await (await fetch(dataUrl)).blob();
+        await uploadImage(blob);
+      } catch (e) {
+        alert('Camera capture failed: ' + (e as any).message || String(e));
+      }
+    } else {
+      // web fallback
+      triggerFileDialog();
+    }
+  }
 
   // Step 1: Scan Barcode
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!gtin) return;
+    setLookupLoading(true);
     try {
-      const res = await fetch(`/api/products/${gtin}`);
+      const res = await fetch(`/api/products/${encodeURIComponent(gtin)}`);
       if (res.ok) {
         const prod = await res.json();
         setProduct(prod);
         // Fetch history for comparison
-        const histRes = await fetch(`/api/products/${gtin}/inspections`);
+        const histRes = await fetch(`/api/products/${encodeURIComponent(gtin)}/inspections`);
         const hist = await histRes.json();
         setHistory(hist);
         setStep(2);
@@ -28,6 +142,8 @@ export default function InspectionsPage() {
       }
     } catch (e) {
       alert("Failed to connect to backend API.");
+    } finally {
+      setLookupLoading(false);
     }
   };
 
@@ -115,25 +231,29 @@ export default function InspectionsPage() {
                     style={{ flex: 1 }}
                     autoFocus
                   />
-                  <button type="submit" className="primary">Lookup Product</button>
+                  <button type="submit" className="primary" disabled={lookupLoading}>{lookupLoading ? 'Looking up…' : 'Lookup Product'}</button>
                 </form>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={() => alert('Mock: Opening File Dialog for Upload')}>
+                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={triggerFileDialog}>
                     <div style={{ fontSize: '24px', marginBottom: '8px' }}>📁</div>
                     <div style={{ fontWeight: 600, color: 'var(--text)' }}>Upload Image</div>
                     <div style={{ fontSize: '11px', color: 'var(--dim)', marginTop: '4px' }}>Upload barcode or product image</div>
                   </div>
-                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={() => alert('Mock: Connecting to WebSocket Webcam Stream...')}>
+
+                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={() => navigate('/scan')}>
                     <div style={{ fontSize: '24px', marginBottom: '8px' }}>🎥</div>
-                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>Live Webcam Scan</div>
-                    <div style={{ fontSize: '11px', color: 'var(--dim)', marginTop: '4px' }}>Real-time WS barcode scanning</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>Live Scan</div>
+                    <div style={{ fontSize: '11px', color: 'var(--dim)', marginTop: '4px' }}>Open camera scanner for live detection</div>
                   </div>
-                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={() => alert('Mock: Opening Camera for Snapshot')}>
+
+                  <div style={{ border: '1px dashed var(--line2)', borderRadius: '7px', padding: '24px', textAlign: 'center', cursor: 'pointer', background: 'var(--bg)' }} onClick={captureAndUpload}>
                     <div style={{ fontSize: '24px', marginBottom: '8px' }}>📸</div>
-                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>Camera Capture</div>
-                    <div style={{ fontSize: '11px', color: 'var(--dim)', marginTop: '4px' }}>Capture section for evidence</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>{uploading ? 'Uploading…' : 'Camera Capture'}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--dim)', marginTop: '4px' }}>Capture evidence image and upload</div>
                   </div>
+
+                  <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onFileSelected} />
                 </div>
               </div>
             </div>
