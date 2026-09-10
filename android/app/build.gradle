@@ -25,16 +25,18 @@ android {
         }
     }
 
-    // Example signingConfigs (commented):
-    // signingConfigs {
-    //     release {
-    //         // copy the generated keystore into a safe location and set the path here
-    //         storeFile file("${rootProject.projectDir}/../.session/genesis-release.keystore")
-    //         storePassword "changeme"
-    //         keyAlias "genesis_key"
-    //         keyPassword "changeme"
-    //     }
-    // }
+    // Signing config: read keystore path and passwords from environment variables when present.
+    signingConfigs {
+        release {
+            def keystorePath = System.getenv('ANDROID_KEYSTORE_PATH') ?: "${rootProject.projectDir}/../.session/genesis-release.keystore"
+            if (file(keystorePath).exists()) {
+                storeFile file(keystorePath)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD') ?: 'changeme'
+                keyAlias System.getenv('ANDROID_KEY_ALIAS') ?: 'genesis_key'
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD') ?: 'changeme'
+            }
+        }
+    }
 
 }
 
