@@ -22,11 +22,6 @@ export default defineConfig({
         }
       }
     },
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
+    // Use default terser options; keep console removal via build/time transforms if needed
   }
 })
