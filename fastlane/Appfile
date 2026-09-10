@@ -1,0 +1,2 @@
+app_identifier("com.genesis.app") # The bundle identifier
+apple_id("your-apple-id@example.com") # Your Apple ID

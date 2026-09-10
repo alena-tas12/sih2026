@@ -1,0 +1,27 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build iOS app using Capacitor and produce IPA"
+  lane :build do
+    # Use App Store Connect API Key if provided
+    api_key = nil
+    if File.exist("fastlane/AuthKey.p8")
+      api_key = app_store_connect_api_key(
+        key_id: ENV['APP_STORE_CONNECT_KEY_ID'] || 'KEYID',
+        issuer_id: ENV['APP_STORE_CONNECT_ISSUER_ID'] || 'ISSUERID',
+        key_filepath: "fastlane/AuthKey.p8",
+        in_house: false
+      )
+    end
+
+    sh("npx cap sync ios")
+
+    build_app(
+      workspace: "ios/App/App.xcworkspace",
+      scheme: "App",
+      export_method: "app-store",
+      output_directory: "fastlane/output",
+      api_key: api_key
+    )
+  end
+end
