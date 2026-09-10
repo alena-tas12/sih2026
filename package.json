@@ -13,5 +13,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/alena-tas12/sih2026.git"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
+    "@capacitor/ios": "^8.5.1"
   }
 }

@@ -23,6 +23,9 @@ export default function Sidebar() {
         <NavLink to="/inspections" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <span className="ico">◈</span>Inspections
         </NavLink>
+        <NavLink to="/scan" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+          <span className="ico">📷</span>Scan
+        </NavLink>
         <NavLink to="/products" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <span className="ico">📦</span>Product Intel
         </NavLink>

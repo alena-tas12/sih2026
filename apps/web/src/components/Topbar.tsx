@@ -13,6 +13,7 @@ export default function Topbar() {
       <div className="crumb">Genesis <span style={{ margin: '0 8px', color: '#444' }}>/</span> <b>{path}</b></div>
       <div className="top-actions">
         <input className="search" placeholder="Search cases, rules, evidence…" />
+        <button className="icon-btn" onClick={() => navigate('/scan')}>📷 Scan</button>
         <button className="icon-btn">⌘</button>
         <button className="icon-btn">◔</button>
         <button className="primary" onClick={() => navigate('/inspections')}>New inspection</button>

@@ -14,6 +14,7 @@ import AuditLogPage from './pages/AuditLogPage';
 import InspectionsPage from './pages/InspectionsPage';
 import CaseReviewPage from './pages/CaseReviewPage';
 import ProductsPage from './pages/ProductsPage';
+import ScanPage from './pages/ScanPage';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/inspections" element={<InspectionsPage />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/scan" element={<ScanPage />} />
             <Route path="/cases" element={<CasesPage />} />
             <Route path="/cases/:id" element={<CaseReviewPage />} />
             <Route path="/evidence" element={<EvidencePage />} />

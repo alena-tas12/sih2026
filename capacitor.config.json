@@ -1,0 +1,5 @@
+{
+  "appId": "com.genesis.app",
+  "appName": "Genesis",
+  "webDir": "apps/web/dist"
+}
