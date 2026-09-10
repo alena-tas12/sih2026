@@ -1,34 +1,46 @@
-import React, { useState, useMemo } from 'react';
-
-const auditData = [
-  { ts: '2026-09-09 14:32:01', actor: 'Alena B', type: 'CASE_OVERRIDE', actorType: 'Human', desc: 'Manually approved "Net Quantity" field despite OCR contradiction.', ref: 'CASE-2026-0104' },
-  { ts: '2026-09-09 14:30:15', actor: 'SYSTEM (OCR)', type: 'EXTRACTION_HALT', actorType: 'System', desc: 'Contradiction detected between PaddleOCR and Donut VLM.', ref: 'CASE-2026-0104' },
-  { ts: '2026-09-09 10:15:00', actor: 'SYSTEM (CRON)', type: 'RULE_SYNC', actorType: 'System', desc: 'Updated local Legal Metrology ruleset from upstream master.', ref: 'SYNC-992' },
-  { ts: '2026-09-08 19:42:11', actor: 'Alena B', type: 'POLICY_UPDATE', actorType: 'Human', desc: 'Changed Auto-Approve Threshold from 80% to 85%.', ref: 'CFG-SET' },
-];
+import React, { useState, useEffect, useMemo } from 'react';
 
 export default function AuditLogPage() {
   const [search, setSearch] = useState('');
   const [eventType, setEventType] = useState('All Event Types');
+  const [auditData, setAuditData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/audit-logs')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setAuditData(data);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const filteredData = useMemo(() => {
     return auditData.filter(log => {
-      const matchesSearch = log.desc.toLowerCase().includes(search.toLowerCase()) || 
-                            log.actor.toLowerCase().includes(search.toLowerCase()) ||
-                            log.ref.toLowerCase().includes(search.toLowerCase());
+      const details = log.details || '';
+      const actor = log.actor || '';
+      const targetId = log.targetId || '';
+      const action = log.action || '';
+      
+      const matchesSearch = details.toLowerCase().includes(search.toLowerCase()) || 
+                            actor.toLowerCase().includes(search.toLowerCase()) ||
+                            targetId.toLowerCase().includes(search.toLowerCase());
       
       const matchesType = eventType === 'All Event Types' ||
-                          (eventType === 'Human Action' && log.actorType === 'Human') ||
-                          (eventType === 'System Action' && log.actorType === 'System') ||
-                          (eventType === 'Rule Update' && log.type.includes('RULE'));
+                          (eventType === 'Human Action' && actor !== 'SYSTEM') ||
+                          (eventType === 'System Action' && actor === 'SYSTEM') ||
+                          (eventType === 'Rule Update' && action.includes('RULE'));
       return matchesSearch && matchesType;
     });
-  }, [search, eventType]);
+  }, [search, eventType, auditData]);
 
   const exportCSV = () => {
     const csvContent = "data:text/csv;charset=utf-8," 
       + ["Timestamp,Actor,Event Type,Description,Reference"]
-      .concat(filteredData.map(l => `"${l.ts}","${l.actor}","${l.type}","${l.desc}","${l.ref}"`))
+      .concat(filteredData.map(l => `"${l.timestamp}","${l.actor}","${l.action}","${l.details || ''}","${l.targetId || ''}"`))
       .join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -38,6 +50,8 @@ export default function AuditLogPage() {
     link.click();
     document.body.removeChild(link);
   };
+
+  if (loading) return <div className="content" style={{ color: 'var(--dim)' }}>Loading audit logs...</div>;
 
   return (
     <section className="content">
@@ -81,17 +95,17 @@ export default function AuditLogPage() {
             <tbody>
               {filteredData.map((log, i) => (
                 <tr key={i}>
-                  <td className="mono" style={{ color: 'var(--dim)' }}>{log.ts}</td>
-                  <td><span className={`tag ${log.actorType === 'Human' ? 'amber' : ''}`}>{log.actor}</span></td>
-                  <td>{log.type}</td>
-                  <td>{log.desc}</td>
-                  <td className="mono"><a href={`/cases/${log.ref}`} style={{ color: 'var(--text)', textDecoration: 'underline' }}>{log.ref}</a></td>
+                  <td className="mono" style={{ color: 'var(--dim)' }}>{log.timestamp ? new Date(log.timestamp).toLocaleString() : '—'}</td>
+                  <td><span className={`tag ${log.actor !== 'SYSTEM' ? 'amber' : ''}`}>{log.actor}</span></td>
+                  <td>{log.action}</td>
+                  <td>{log.details || '—'}</td>
+                  <td className="mono">{log.targetId ? <a href={`/cases/${log.targetId}`} style={{ color: 'var(--text)', textDecoration: 'underline' }}>{log.targetId}</a> : '—'}</td>
                 </tr>
               ))}
               {filteredData.length === 0 && (
                 <tr>
                   <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: 'var(--dim)' }}>
-                    No audit records match your filters.
+                    {auditData.length === 0 ? 'No audit records yet. Actions will be recorded as you use the system.' : 'No audit records match your filters.'}
                   </td>
                 </tr>
               )}

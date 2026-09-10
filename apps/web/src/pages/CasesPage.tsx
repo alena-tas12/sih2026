@@ -78,7 +78,7 @@ export default function CasesPage() {
                 <th>Organization</th>
                 <th>Date</th>
                 <th>Status</th>
-                <th>Fields</th>
+                <th>Location</th>
               </tr>
             </thead>
             <tbody>
@@ -91,24 +91,20 @@ export default function CasesPage() {
                 return (
                   <tr key={c.id} onClick={() => navigate(`/cases/${c.id}`)} style={{ cursor: 'pointer' }}>
                     <td><span className="mono">{c.id}</span></td>
-                    <td className="primary-cell">{c.product}</td>
-                    <td>{c.org}</td>
-                    <td>{c.date}</td>
+                    <td className="primary-cell">{c.productName || c.gtin}</td>
+                    <td>{c.orgName || '—'}</td>
+                    <td>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
                     <td>
-                      <span className={`tag ${statusMap[c.status]}`}>{c.status.replace('_', ' ')}</span>
+                      <span className={`tag ${statusMap[c.status] || ''}`}>{(c.status || '').replace('_', ' ')}</span>
                     </td>
-                    <td>
-                      <span style={{ color: 'var(--green)', fontWeight: 600 }}>{c.compliant}</span>
-                      {c.review > 0 && <span style={{ color: 'var(--amber)', fontWeight: 600 }}> +{c.review}</span>}
-                      <span style={{ color: 'var(--dim)' }}> / {c.total}</span>
-                    </td>
+                    <td>{c.location || '—'}</td>
                   </tr>
                 );
               })}
               {filteredCases.length === 0 && (
                 <tr>
                   <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: 'var(--dim)' }}>
-                    No cases match your filters.
+                    {casesData.length === 0 ? 'No inspections recorded yet. Run your first inspection to see cases here.' : 'No cases match your filters.'}
                   </td>
                 </tr>
               )}

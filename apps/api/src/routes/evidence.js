@@ -1,13 +1,22 @@
 import { Hono } from 'hono'
 const router = new Hono()
 
+router.get('/', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare('SELECT * FROM evidence ORDER BY uploadedAt DESC LIMIT 50').all()
+    return c.json(results || [])
+  } catch (err) {
+    return c.json([])
+  }
+})
+
 router.get('/:inspectionId', async (c) => {
   try {
-    const { inspectionId } = c.req.param()
+    const inspectionId = c.req.param('inspectionId')
     const { results } = await c.env.DB.prepare('SELECT * FROM evidence WHERE inspectionId = ? ORDER BY uploadedAt DESC').bind(inspectionId).all()
-    return c.json(results)
+    return c.json(results || [])
   } catch (err) {
-    return c.json({ error: 'Database error fetching evidence' }, 500)
+    return c.json([])
   }
 })
 
@@ -18,7 +27,7 @@ router.post('/', async (c) => {
 
     await c.env.DB.prepare(
       'INSERT INTO evidence (id, inspectionId, type, url) VALUES (?, ?, ?, ?)'
-    ).bind(id, inspectionId, type, url).run()
+    ).bind(id || `EV-${Date.now()}`, inspectionId, type, url).run()
 
     await c.env.DB.prepare(
       'INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)'

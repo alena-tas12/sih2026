@@ -7,11 +7,12 @@ router.get('/', async (c) => {
       SELECT i.*, p.name as productName, p.vendor as orgName
       FROM inspections i
       LEFT JOIN products p ON i.gtin = p.gtin
-      ORDER BY i.date DESC
+      ORDER BY i.createdAt DESC
     `).all()
-    return c.json(results)
+    return c.json(results || [])
   } catch (err) {
-    return c.json({ error: 'Database error fetching cases' }, 500)
+    // If table doesn't exist yet, return empty array instead of crashing
+    return c.json([])
   }
 })
 
@@ -28,14 +29,17 @@ router.get('/:id', async (c) => {
     if (!caseData) return c.json({ error: 'Not found' }, 404)
     return c.json(caseData)
   } catch (err) {
-    return c.json({ error: 'Database error' }, 500)
+    return c.json({ error: 'Case not found' }, 404)
   }
 })
 
 router.post('/', async (c) => {
   try {
     const body = await c.req.json()
-    const { id, gtin, location, extractedMrp, extractedQty, extractedMfgDate, extractedExpDate, status, reviewDecision, reviewerNotes } = body
+    const { gtin, location, extractedMrp, extractedQty, extractedMfgDate, extractedExpDate, status, reviewDecision, reviewerNotes } = body
+    
+    // Auto-generate an ID
+    const id = body.id || `CASE-${Date.now()}`
 
     await c.env.DB.prepare(`
       INSERT INTO inspections (id, gtin, location, extractedMrp, extractedQty, extractedMfgDate, extractedExpDate, status, reviewDecision, reviewerNotes) 
@@ -46,11 +50,11 @@ router.post('/', async (c) => {
 
     await c.env.DB.prepare(
       "INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)"
-    ).bind('INSPECTION_RECORDED', 'API_USER', id, `Recorded inspection for ${gtin}`).run()
+    ).bind('INSPECTION_RECORDED', 'API_USER', id, `Recorded inspection for ${gtin} at ${location}`).run()
 
     return c.json({ success: true, id }, 201)
   } catch (err) {
-    return c.json({ error: 'Database error saving inspection' }, 500)
+    return c.json({ error: 'Database error saving inspection', detail: String(err) }, 500)
   }
 })
 

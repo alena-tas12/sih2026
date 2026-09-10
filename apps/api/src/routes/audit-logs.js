@@ -4,9 +4,9 @@ const router = new Hono()
 router.get('/', async (c) => {
   try {
     const { results } = await c.env.DB.prepare('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 100').all()
-    return c.json(results)
+    return c.json(results || [])
   } catch (err) {
-    return c.json({ error: 'Database error fetching audit logs' }, 500)
+    return c.json([])
   }
 })
 

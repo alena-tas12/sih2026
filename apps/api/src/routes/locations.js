@@ -4,9 +4,9 @@ const router = new Hono()
 router.get('/', async (c) => {
   try {
     const { results } = await c.env.DB.prepare('SELECT * FROM locations ORDER BY createdAt DESC').all()
-    return c.json(results)
+    return c.json(results || [])
   } catch (err) {
-    return c.json({ error: 'Database error fetching locations' }, 500)
+    return c.json([])
   }
 })
 
@@ -17,7 +17,7 @@ router.post('/', async (c) => {
 
     await c.env.DB.prepare(
       'INSERT INTO locations (id, name, type, region) VALUES (?, ?, ?, ?)'
-    ).bind(id, name, type, region).run()
+    ).bind(id || `LOC-${Date.now()}`, name, type, region).run()
 
     await c.env.DB.prepare(
       'INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)'

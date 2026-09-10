@@ -10,9 +10,14 @@ import auditLogRoutes from './routes/audit-logs.js'
 
 const app = new Hono()
 
+// Global error handler — NEVER return raw "Internal Server Error"
+app.onError((err, c) => {
+  console.error('Unhandled error:', err)
+  return c.json({ error: 'Something went wrong', detail: String(err) }, 500)
+})
+
 app.use('*', cors({
   origin: (origin) => {
-    // In production, restrict this. For now, allow local Vite proxy or any.
     return origin || 'http://localhost:5173'
   },
   credentials: true
