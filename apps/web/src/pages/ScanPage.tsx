@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
+import { Capacitor } from '@capacitor/core';
+import { BarcodeFormat, BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -19,6 +21,38 @@ export default function ScanPage() {
   }, []);
 
   async function startScan() {
+    if (Capacitor.isNativePlatform()) {
+      setLoading(true);
+      try {
+        const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+        if (!available) {
+          await BarcodeScanner.installGoogleBarcodeScannerModule();
+        }
+        const { barcodes } = await BarcodeScanner.scan({
+          formats: [
+            BarcodeFormat.Ean13,
+            BarcodeFormat.Ean8,
+            BarcodeFormat.UpcA,
+            BarcodeFormat.UpcE,
+            BarcodeFormat.Code128,
+          ],
+          autoZoom: true,
+        });
+        const code = barcodes[0]?.rawValue;
+        if (code) {
+          setResult(code);
+          await handleFoundCode(code);
+        } else {
+          alert('No barcode was detected.');
+        }
+      } catch (e) {
+        alert('Native barcode scanning failed: ' + (e instanceof Error ? e.message : String(e)));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (!videoRef.current) return;
     setLoading(true);
     // request permission first to provide clearer errors

@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { Camera, CameraResultType } from '@capacitor/camera';
 
 export default function InspectionsPage() {
   const [step, setStep] = useState(1);
@@ -104,12 +106,17 @@ export default function InspectionsPage() {
   }
 
   async function captureAndUpload() {
-    // If running in Capacitor native with Camera plugin, use it; otherwise fallback to file input
-    const Cap = (window as any).Capacitor;
-    if (Cap && Cap.Plugins && Cap.Plugins.Camera && Cap.Plugins.Camera.getPhoto) {
+    if (Capacitor.isNativePlatform()) {
       try {
-        const photo = await Cap.Plugins.Camera.getPhoto({ quality: 80, resultType: 'base64', allowEditing: false });
+        const photo = await Camera.getPhoto({
+          quality: 80,
+          resultType: CameraResultType.Base64,
+          allowEditing: false,
+        });
         const base64 = photo.base64String;
+        if (!base64) {
+          throw new Error('Camera returned no image data');
+        }
         const dataUrl = 'data:image/jpeg;base64,' + base64;
         const blob = await (await fetch(dataUrl)).blob();
         await uploadImage(blob);
