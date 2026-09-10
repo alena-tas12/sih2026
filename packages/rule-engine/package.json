@@ -1,14 +1,34 @@
 {
-  "name": "rule-engine",
+  "name": "@genesis-compliance/rule-engine",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Rule engine for Genesis Compliance system - evaluates compliance rules and generates evidence graphs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "test": "jest",
+    "prepare": "npm run build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "compliance",
+    "rule-engine",
+    "evidence",
+    "genesis"
+  ],
+  "author": "alena-tas12",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alena-tas12/sih2026.git",
+    "directory": "packages/rule-engine"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "jest": "^30.5.1",

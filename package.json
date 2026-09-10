@@ -2,7 +2,16 @@
   "name": "genesis-compliance-root",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "build": "cd apps/api && npm install && cd ../../apps/web && npm install && npm run build"
+    "build": "cd apps/api && npm install && cd ../../apps/web && npm install && npm run build",
+    "build:packages": "npm run build --workspaces --if-present"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alena-tas12/sih2026.git"
   }
 }
