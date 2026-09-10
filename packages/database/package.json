@@ -1,0 +1,26 @@
+{
+  "name": "@genesis-compliance/database",
+  "version": "1.0.0",
+  "description": "Database schema and migrations for Genesis Compliance system",
+  "main": "schema.sql",
+  "files": [
+    "schema.sql",
+    "README.md"
+  ],
+  "keywords": [
+    "compliance",
+    "database",
+    "schema",
+    "genesis"
+  ],
+  "author": "alena-tas12",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alena-tas12/sih2026.git",
+    "directory": "packages/database"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
