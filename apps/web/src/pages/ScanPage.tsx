@@ -134,9 +134,7 @@ export default function ScanPage() {
   }
 
   const handleDirectEvidenceCapture = () => {
-    // Generate a temporary unique GTIN-like string for direct capture
-    const tempId = 'DIRECT-' + Math.floor(Math.random() * 1000000);
-    navigate('/inspections?gtin=' + encodeURIComponent(tempId));
+    navigate('/inspections?mode=direct');
   };
 
   return (

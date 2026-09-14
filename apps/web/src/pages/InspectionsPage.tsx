@@ -18,11 +18,35 @@ export default function InspectionsPage() {
 
   useEffect(() => {
     const q = searchParams.get('gtin');
+    const mode = searchParams.get('mode');
     if (q) {
       setGtin(q);
       handleGTINLookup(q);
+    } else if (mode === 'direct') {
+      handleDirectCapture();
     }
   }, [searchParams]);
+
+  const handleDirectCapture = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('genesis_auth');
+      const insRes = await fetch('/api/inspections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ gtin: null, location_id: 'LOC-BLR' })
+      });
+      const insData = await insRes.json();
+      setInspection(insData.id);
+      setProduct({ name: 'Unknown Product', standard_mrp: 'N/A' });
+      setStep(2);
+    } catch (e) {
+      console.error(e);
+      alert('Network error connecting to registry.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGTINLookup = async (lookupGtin: string) => {
     setLoading(true);
