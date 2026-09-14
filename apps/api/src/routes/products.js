@@ -3,7 +3,12 @@ const router = new Hono()
 
 router.get('/', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare('SELECT * FROM products ORDER BY created_at DESC').all()
+    const { results } = await c.env.DB.prepare(`
+      SELECT p.*, g.gtin 
+      FROM products p 
+      LEFT JOIN gtin_registry g ON p.id = g.product_id 
+      ORDER BY p.created_at DESC
+    `).all()
     return c.json(results || [])
   } catch (err) {
     return c.json([])

@@ -16,6 +16,8 @@ export default function InspectionsPage() {
   const [searchParams] = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [registry, setRegistry] = useState<any[]>([]);
+
   useEffect(() => {
     const q = searchParams.get('gtin');
     const mode = searchParams.get('mode');
@@ -25,6 +27,12 @@ export default function InspectionsPage() {
     } else if (mode === 'direct') {
       handleDirectCapture();
     }
+
+    // Fetch catalog for Step 1
+    fetch('/api/products')
+      .then(r => r.json())
+      .then(data => setRegistry(data))
+      .catch(e => console.error("Could not load registry", e));
   }, [searchParams]);
 
   const handleDirectCapture = async () => {
@@ -197,6 +205,41 @@ export default function InspectionsPage() {
                 {step >= 2 ? 'Locked' : (loading ? 'Lookup...' : 'Lookup Registry')}
               </button>
             </div>
+
+            {/* Registry Preview available only on Step 1 */}
+            {step === 1 && registry.length > 0 && (
+              <div style={{ marginTop: '24px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>Available Products in Registry</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                  {registry.map((prod, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => {
+                        if (prod.gtin) {
+                          setGtin(prod.gtin);
+                          handleGTINLookup(prod.gtin);
+                        }
+                      }}
+                      style={{ 
+                        border: '1px solid #e5e5e5', borderRadius: '8px', padding: '12px', 
+                        background: '#fff', cursor: prod.gtin ? 'pointer' : 'default', 
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' 
+                      }}
+                    >
+                      {prod.image_url ? (
+                        <img src={prod.image_url} alt={prod.name} style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '8px' }} />
+                      ) : (
+                        <div style={{ width: '60px', height: '60px', background: '#fafafa', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <FileImage size={24} color="#ccc" />
+                        </div>
+                      )}
+                      <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{prod.name}</div>
+                      <div style={{ fontSize: '11px', color: '#666' }}>GTIN: {prod.gtin || 'None'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
