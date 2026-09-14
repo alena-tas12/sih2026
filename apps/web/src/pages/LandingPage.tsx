@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, Globe, Activity, Lock, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem('genesis_auth')) {
+      navigate('/app');
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-black text-gray-100 font-sans">

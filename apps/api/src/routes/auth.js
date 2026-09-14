@@ -15,7 +15,7 @@ router.post('/login', async (c) => {
         email: email,
         role: 'admin',
         org_id: 'ORG-MAIN',
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 // 24 hours
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30 // 30 days for demo persistence
       }
       
       // Use standard JWT signing with a secret from env, or fallback for demo
