@@ -177,7 +177,7 @@ export default function InspectionsPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
         
         {/* Step 1: Barcode */}
-        {step === 1 && (
+        {step >= 1 && (
           <div style={{ border: '1px solid #e5e5e5', padding: '24px', borderRadius: '8px', background: '#fafafa' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>1. Barcode Observation</h2>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -186,14 +186,15 @@ export default function InspectionsPage() {
                 placeholder="Scan GTIN..." 
                 value={gtin} 
                 onChange={(e) => setGtin(e.target.value)}
-                style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', flex: 1 }}
+                disabled={step >= 2}
+                style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px', flex: 1, backgroundColor: step >= 2 ? '#eee' : '#fff' }}
               />
               <button 
                 onClick={() => handleGTINLookup(gtin)} 
-                disabled={loading || !gtin}
-                style={{ background: '#000', color: '#fff', padding: '8px 16px', borderRadius: '4px', fontWeight: 'bold', cursor: loading ? 'wait' : 'pointer' }}
+                disabled={loading || !gtin || step >= 2}
+                style={{ background: step >= 2 ? '#666' : '#000', color: '#fff', padding: '8px 16px', borderRadius: '4px', fontWeight: 'bold', cursor: (loading || step >= 2) ? 'not-allowed' : 'pointer' }}
               >
-                {loading ? 'Lookup...' : 'Lookup Registry'}
+                {step >= 2 ? 'Locked' : (loading ? 'Lookup...' : 'Lookup Registry')}
               </button>
             </div>
           </div>
