@@ -16,15 +16,6 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    buildTypes {
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // To sign a release build, uncomment and configure signingConfigs below.
-            signingConfig signingConfigs.release
-        }
-    }
-
     // Signing config: read keystore path and passwords from environment variables when present.
     signingConfigs {
         release {
@@ -35,6 +26,15 @@ android {
                 keyAlias System.getenv('ANDROID_KEY_ALIAS') ?: 'genesis_key'
                 keyPassword System.getenv('ANDROID_KEY_PASSWORD') ?: 'changeme'
             }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // To sign a release build, uncomment and configure signingConfigs below.
+            // signingConfig signingConfigs.release
         }
     }
 

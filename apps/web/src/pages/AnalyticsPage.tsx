@@ -1,6 +1,8 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AnalyticsPage() {
+  const navigate = useNavigate();
   const handleExport = () => {
     alert('Analytics report exported as CSV.');
   };
@@ -75,7 +77,7 @@ export default function AnalyticsPage() {
           </div>
         </section>
         <section className="panel">
-          <div className="panel-head"><div><div className="panel-title">Recent system activity</div><div className="panel-note">Latest events</div></div><a href="/audit"><button className="outline" style={{height:'28px',padding:'0 9px'}}>View all</button></a></div>
+          <div className="panel-head"><div><div className="panel-title">Recent system activity</div><div className="panel-note">Latest events</div></div><button className="outline" style={{height:'28px',padding:'0 9px'}} onClick={() => navigate('/audit')}>View all</button></div>
           <div className="panel-body">
             <div className="list">
               <div className="row"><div className="row-main"><div className="row-title">CASE-2026-0104 finalized</div><div className="row-sub">Net quantity and MRP approved</div></div><span className="tag green">Approved</span></div>
@@ -86,7 +88,7 @@ export default function AnalyticsPage() {
         </section>
       </div>
       <section className="panel bottom" style={{ marginTop: '24px' }}>
-        <div className="panel-head"><div><div className="panel-title">Recent inspections</div><div className="panel-note">Latest cases processed by the workspace</div></div><a href="/cases"><button className="outline" style={{height:'30px'}}>Open cases</button></a></div>
+        <div className="panel-head"><div><div className="panel-title">Recent inspections</div><div className="panel-note">Latest cases processed by the workspace</div></div><button className="outline" style={{height:'30px'}} onClick={() => navigate('/cases')}>Open cases</button></div>
         <div className="table-wrap">
           <table className="table">
             <thead><tr><th>Case ID</th><th>Product</th><th>Organization</th><th>Fields</th><th>Status</th><th>Updated</th></tr></thead>

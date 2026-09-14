@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React, { useState, useEffect, useMemo } from 'react';
 
 export default function AuditLogPage() {
@@ -99,7 +100,7 @@ export default function AuditLogPage() {
                   <td><span className={`tag ${log.actor !== 'SYSTEM' ? 'amber' : ''}`}>{log.actor}</span></td>
                   <td>{log.action}</td>
                   <td>{log.details || '—'}</td>
-                  <td className="mono">{log.targetId ? <a href={`/cases/${log.targetId}`} style={{ color: 'var(--text)', textDecoration: 'underline' }}>{log.targetId}</a> : '—'}</td>
+                  <td className="mono">{log.targetId ? <Link to={`/cases/${log.targetId}`} style={{ color: 'var(--text)', textDecoration: 'underline' }}>{log.targetId}</Link> : '—'}</td>
                 </tr>
               ))}
               {filteredData.length === 0 && (

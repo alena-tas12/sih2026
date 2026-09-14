@@ -13,16 +13,17 @@ router.get('/', async (c) => {
       const alertsRes = await c.env.DB.prepare(`
         SELECT i.*, p.name as productName 
         FROM inspections i
-        LEFT JOIN products p ON i.gtin = p.gtin
+        LEFT JOIN gtin_registry g ON i.gtin = g.gtin
+        LEFT JOIN products p ON g.product_id = p.id
         WHERE i.status IN ('NON_COMPLIANT', 'REVIEW_REQUIRED')
-        ORDER BY i.createdAt DESC LIMIT 5
+        ORDER BY i.created_at DESC LIMIT 5
       `).all()
       alerts = alertsRes.results || []
     } catch (e) { /* ignore */ }
     
     let recentLogs = []
     try {
-      const logsRes = await c.env.DB.prepare('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 5').all()
+      const logsRes = await c.env.DB.prepare('SELECT * FROM audit_events ORDER BY timestamp DESC LIMIT 5').all()
       recentLogs = logsRes.results || []
     } catch (e) { /* ignore */ }
 
@@ -37,7 +38,6 @@ router.get('/', async (c) => {
       recentActivity: recentLogs
     })
   } catch (err) {
-    // Return safe defaults even if DB is completely broken
     return c.json({
       metrics: {
         productsTracked: 0,

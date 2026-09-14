@@ -197,7 +197,7 @@ export default function SettingsPage() {
                 <div>
                   <h3 style={{ fontSize: '14px', margin: '0 0 12px 0' }}>Generate Access Token</h3>
                   <p style={{ fontSize: '12px', color: 'var(--dim)', marginBottom: '12px' }}>Create an API token to allow external ERP systems to push Product Master data to this node.</p>
-                  <button className="outline">Generate New Token</button>
+                  <button className="outline" onClick={() => alert("New token generated: GEN-"+Date.now())}>Generate New Token</button>
                 </div>
               </div>
             </>

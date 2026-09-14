@@ -1,5 +1,21 @@
 {
   "appId": "com.genesis.app",
-  "appName": "Genesis",
-  "webDir": "apps/web/dist"
+  "appName": "Genesis Compliance",
+  "webDir": "apps/web/dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#111827",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": true,
+      "androidSpinnerStyle": "large",
+      "iosSpinnerStyle": "small",
+      "spinnerColor": "#3B82F6",
+      "splashFullScreen": true,
+      "splashImmersive": true
+    }
+  }
 }

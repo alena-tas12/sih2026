@@ -3,7 +3,7 @@ const router = new Hono()
 
 router.get('/', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare('SELECT * FROM evidence ORDER BY uploadedAt DESC LIMIT 50').all()
+    const { results } = await c.env.DB.prepare('SELECT * FROM evidence ORDER BY uploaded_at DESC LIMIT 50').all()
     return c.json(results || [])
   } catch (err) {
     return c.json([])
@@ -13,72 +13,107 @@ router.get('/', async (c) => {
 router.get('/:inspectionId', async (c) => {
   try {
     const inspectionId = c.req.param('inspectionId')
-    const { results } = await c.env.DB.prepare('SELECT * FROM evidence WHERE inspectionId = ? ORDER BY uploadedAt DESC').bind(inspectionId).all()
+    const { results } = await c.env.DB.prepare('SELECT * FROM evidence WHERE inspection_id = ? ORDER BY uploaded_at DESC').bind(inspectionId).all()
     return c.json(results || [])
   } catch (err) {
     return c.json([])
   }
 })
 
-router.post('/', async (c) => {
-  try {
-    const body = await c.req.json()
-    const { id, inspectionId, type, url } = body
-
-    await c.env.DB.prepare(
-      'INSERT INTO evidence (id, inspectionId, type, url) VALUES (?, ?, ?, ?)'
-    ).bind(id || `EV-${Date.now()}`, inspectionId, type, url).run()
-
-    await c.env.DB.prepare(
-      'INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)'
-    ).bind('UPLOAD_EVIDENCE', 'API_USER', inspectionId, `Uploaded ${type} evidence`).run()
-
-    return c.json({ success: true, id }, 201)
-  } catch (err) {
-    return c.json({ error: 'Error uploading evidence' }, 500)
+function base64ToUint8Array(base64Str) {
+  const raw = atob(base64Str.replace(/^data:image\/\w+;base64,/, ''));
+  const uint8Array = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) {
+    uint8Array[i] = raw.charCodeAt(i);
   }
-})
+  return [...uint8Array];
+}
 
-// New upload route: accepts JSON { inspectionId, type, filename, base64 }
 router.post('/upload', async (c) => {
   try {
     const contentType = c.req.headers.get('content-type') || ''
-    let inspectionId = null
-    let type = 'CAMERA'
-    let filename = `evidence-${Date.now()}.jpg`
-    let url = null
-
-    if (contentType.includes('application/json')) {
-      const body = await c.req.json()
-      inspectionId = body.inspectionId || null
-      type = body.type || type
-      filename = body.filename || filename
-      const base64 = body.base64 || body.data || null
-      if (!base64) return c.json({ error: 'No image data provided' }, 400)
-      // store as data URL in DB (fallback if no R2 binding configured)
-      // normalize: if base64 already starts with data:, use as-is
-      if (base64.startsWith('data:')) {
-        url = base64
-      } else {
-        // assume JPEG if no mime provided
-        url = `data:image/jpeg;base64,${base64}`
-      }
-    } else {
-      // For multipart/form-data, prefer JSON route; return error
+    if (!contentType.includes('application/json')) {
       return c.json({ error: 'Unsupported content type, please POST JSON with base64 image' }, 415)
     }
 
+    const body = await c.req.json()
+    const inspectionId = body.inspectionId || null
+    const type = body.type || 'IMAGE'
+    const base64 = body.base64 || body.data || null
+    
+    if (!base64) return c.json({ error: 'No image data provided' }, 400)
+    
+    let url = base64.startsWith('data:') ? base64 : `data:image/jpeg;base64,${base64}`
     const id = `EV-${Date.now()}`
 
+    // Insert Evidence
     await c.env.DB.prepare(
-      'INSERT INTO evidence (id, inspectionId, type, url) VALUES (?, ?, ?, ?)'
+      'INSERT INTO evidence (id, inspection_id, type, url) VALUES (?, ?, ?, ?)'
     ).bind(id, inspectionId, type, url).run()
 
     await c.env.DB.prepare(
-      'INSERT INTO audit_logs (action, actor, targetId, details) VALUES (?, ?, ?, ?)'
-    ).bind('UPLOAD_EVIDENCE', 'API_USER', inspectionId, `Uploaded ${type} evidence`).run()
+      'INSERT INTO audit_events (action, entity_type, entity_id, details) VALUES (?, ?, ?, ?)'
+    ).bind('UPLOAD_EVIDENCE', 'EVIDENCE', id, `Uploaded ${type} evidence for inspection ${inspectionId}`).run()
 
-    return c.json({ success: true, id, url }, 201)
+    // Real AI OCR Vision Extraction (Cloudflare Llama-3.2-Vision)
+    let extractionId = `EXT-${Date.now()}`
+    let parsedMrp = null, parsedBatch = null, parsedExp = null
+    let confidence = 0.95 // Default confidence assumption
+    let rawText = ""
+
+    try {
+      const imageBytes = base64ToUint8Array(base64)
+      const prompt = `You are a compliance inspection AI. Extract product information from this image. 
+      Return ONLY a raw JSON object (no markdown formatting or backticks) with these exact keys: 
+      "mrp" (number or null), "batch" (string or null), "expiry" (string or null). 
+      If a field is not found, use null.`
+
+      const aiResponse = await c.env.AI.run('@cf/meta/llama-3.2-11b-vision-instruct', {
+        image: imageBytes,
+        prompt: prompt
+      });
+
+      rawText = aiResponse.response || "";
+      // Strip markdown code blocks if the AI decided to wrap it anyway
+      let cleanJsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+      const extractedData = JSON.parse(cleanJsonStr);
+      
+      parsedMrp = extractedData.mrp ? parseFloat(extractedData.mrp) : null;
+      parsedBatch = extractedData.batch || null;
+      parsedExp = extractedData.expiry || null;
+      
+    } catch (aiErr) {
+      console.error("AI OCR Failed: ", aiErr)
+      rawText = "AI OCR Failed or timed out."
+      confidence = 0.0
+    }
+
+    // Save Extraction
+    await c.env.DB.prepare(`
+      INSERT INTO extractions (id, evidence_id, raw_text, parsed_mrp, parsed_batch, parsed_exp_date, confidence) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(extractionId, id, rawText, parsedMrp, parsedBatch, parsedExp, confidence).run()
+
+    await c.env.DB.prepare(
+      'INSERT INTO audit_events (action, entity_type, entity_id, details) VALUES (?, ?, ?, ?)'
+    ).bind('OCR_EXTRACTION', 'EVIDENCE', id, `AI Extraction completed`).run()
+
+    // Update inspection status
+    if (inspectionId) {
+       await c.env.DB.prepare('UPDATE inspections SET status = ? WHERE id = ?').bind('OCR_COMPLETED', inspectionId).run()
+    }
+
+    return c.json({ 
+      success: true, 
+      evidenceId: id,
+      extraction: {
+        id: extractionId,
+        mrp: parsedMrp,
+        batch: parsedBatch,
+        expiry: parsedExp,
+        raw: rawText
+      }
+    }, 201)
   } catch (err) {
     console.error('upload error', err)
     return c.json({ error: 'Error uploading evidence' }, 500)

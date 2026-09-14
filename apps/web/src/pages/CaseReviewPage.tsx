@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const mockData = {
   caseId: 'CASE-2026-0104',
@@ -52,6 +53,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function CaseReviewPage() {
+  const navigate = useNavigate();
   const [data] = useState(mockData);
   const [reviewActions, setReviewActions] = useState<Record<string, string>>({});
 
@@ -61,7 +63,7 @@ export default function CaseReviewPage() {
 
   const handleFinalize = () => {
     alert('Inspection finalized. Audit log updated.');
-    window.location.href = '/cases';
+    navigate('/cases');
   };
 
   return (

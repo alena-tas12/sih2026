@@ -1,15 +1,23 @@
-import React, { useState, useMemo } from 'react';
-
-const rulesData = [
-  { id: 'RULE-PC-01', ref: 'PC Rules 2011, Sec 6(1)(a)', field: 'Net Quantity', logic: `value > 0 AND unit IN ('g','kg','ml','L')`, status: 'Active' },
-  { id: 'RULE-PC-02', ref: 'PC Rules 2011, Sec 6(1)(e)', field: 'MRP', logic: `format MATCHES '^Rs\\.\\s?\\d+(\\.\\d{1,2})?$'`, status: 'Active' },
-  { id: 'RULE-PC-03', ref: 'PC Rules 2011, Sec 6(1)(b)', field: 'Mfg Address', logic: `EXISTS(value) AND length(value) > 10`, status: 'Active' },
-  { id: 'RULE-FSSAI-04', ref: 'FSSAI Packaging Regs', field: 'Veg/Non-Veg Logo', logic: `DETECT_LOGO(type='veg_or_nonveg', conf > 80)`, status: 'Draft' },
-];
+import React, { useState, useEffect, useMemo } from 'react';
 
 export default function RegulationsPage() {
   const [search, setSearch] = useState('');
   const [showEditor, setShowEditor] = useState(false);
+  const [rulesData, setRulesData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/regulations')
+      .then(res => res.json())
+      .then(data => {
+        setRulesData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
 
   const filteredRules = useMemo(() => {
     return rulesData.filter(r => 
@@ -17,7 +25,7 @@ export default function RegulationsPage() {
       r.ref.toLowerCase().includes(search.toLowerCase()) || 
       r.field.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search]);
+  }, [search, rulesData]);
 
   return (
     <section className="content">
@@ -68,6 +76,7 @@ export default function RegulationsPage() {
             <span className="tag green">Live</span>
           </div>
           <div className="table-wrap">
+            {loading ? <div style={{ padding: '20px', color: 'var(--dim)' }}>Loading dataset rules...</div> :
             <table className="table">
               <thead>
                 <tr>
@@ -81,8 +90,11 @@ export default function RegulationsPage() {
               <tbody>
                 {filteredRules.map(r => (
                   <tr key={r.id}>
-                    <td className="mono">{r.id}</td>
-                    <td className="primary-cell">{r.ref}</td>
+                    <td className="mono" style={{ fontSize: '11px' }}>{r.id}</td>
+                    <td className="primary-cell">
+                      {r.ref}
+                      {r.url && <div><a href={r.url} target="_blank" rel="noreferrer" style={{ fontSize: '10px', color: 'var(--accent)', textDecoration: 'underline' }}>Source Document</a></div>}
+                    </td>
                     <td>{r.field}</td>
                     <td className="mono" style={{ fontSize: '11px', color: 'var(--dim)' }}>{r.logic}</td>
                     <td><span className={`tag ${r.status === 'Active' ? 'green' : 'amber'}`}>{r.status}</span></td>
@@ -96,7 +108,7 @@ export default function RegulationsPage() {
                   </tr>
                 )}
               </tbody>
-            </table>
+            </table>}
           </div>
         </div>
 

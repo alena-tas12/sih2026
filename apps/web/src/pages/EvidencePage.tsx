@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React, { useState, useEffect, useMemo } from 'react';
 
 export default function EvidencePage() {
@@ -86,7 +87,7 @@ export default function EvidencePage() {
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--muted)' }}>Uploaded {ev.uploadedAt ? new Date(ev.uploadedAt).toLocaleString() : '—'}</div>
                 <div style={{ marginTop: '16px', fontSize: '11px' }}>
-                  Linked to: <a href={`/cases/${ev.inspectionId}`} style={{ color: 'var(--text)', textDecoration: 'underline' }}>{ev.inspectionId}</a>
+                  Linked to: <Link to={`/cases/${ev.inspectionId}`} style={{ color: 'var(--text)', textDecoration: 'underline' }}>{ev.inspectionId}</Link>
                 </div>
               </div>
             </div>
