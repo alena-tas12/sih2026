@@ -202,19 +202,34 @@ export default function InspectionsPage() {
         {/* Step 2: Product Master & Evidence Upload */}
         {step >= 2 && product && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ border: '1px solid #e5e5e5', padding: '16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '12px', color: '#666', fontWeight: 'bold', textTransform: 'uppercase' }}>Product Master Reference</div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{product.name}</div>
-                <div style={{ fontSize: '14px', color: '#666' }}>GTIN: {gtin} • Master MRP: ₹{product.standard_mrp}</div>
+            <div style={{ border: '1px solid #e5e5e5', padding: '16px', borderRadius: '8px', display: 'flex', gap: '16px', alignItems: 'flex-start', background: '#fff' }}>
+              {product.image_url ? (
+                <img src={product.image_url} alt={product.name} style={{ width: '80px', height: '80px', objectFit: 'contain', border: '1px solid #e5e5e5', borderRadius: '4px', background: '#fafafa' }} />
+              ) : (
+                <div style={{ width: '80px', height: '80px', background: '#fafafa', border: '1px solid #e5e5e5', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FileImage size={24} color="#ccc" />
+                </div>
+              )}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#666', fontWeight: 'bold', textTransform: 'uppercase' }}>Product Master Reference</div>
+                  {product.verified === 0 && <span style={{ background: '#fff3cd', color: '#856404', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>CANDIDATE</span>}
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '4px' }}>{product.name}</div>
+                <div style={{ fontSize: '14px', color: '#666', marginTop: '2px' }}>
+                  GTIN: <strong>{gtin}</strong> {product.brand && `• Brand: ${product.brand}`}
+                </div>
+                <div style={{ fontSize: '14px', color: '#666', marginTop: '2px' }}>
+                  Master MRP: <strong>₹{product.standard_mrp || product.mrp || 'N/A'}</strong> {product.net_quantity && `• Net Qty: ${product.net_quantity}`}
+                </div>
                 <button 
-                  onClick={() => navigate(`/products?gtin=${encodeURIComponent(gtin)}`)}
-                  style={{ marginTop: '8px', padding: '4px 8px', background: '#eee', border: '1px solid #ccc', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}
+                  onClick={() => navigate(`/products?gtin=${encodeURIComponent(gtin || '')}`)}
+                  style={{ marginTop: '12px', padding: '6px 12px', background: '#eee', border: '1px solid #ccc', borderRadius: '4px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
-                  View Product Intel ↗
+                  View Full Product Intel ↗
                 </button>
               </div>
-              <ShieldCheck size={32} color="#000" />
+              <ShieldCheck size={32} color={product.verified === 0 ? "#856404" : "#000"} />
             </div>
 
             {step === 2 && (
