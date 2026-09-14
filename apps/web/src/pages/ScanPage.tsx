@@ -66,7 +66,25 @@ export default function ScanPage() {
 
       readerRef.current = new BrowserMultiFormatReader();
       try {
-        readerRef.current.decodeFromVideoDevice(undefined, videoRef.current, async (res: any, err: any) => {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        
+        let selectedDeviceId = undefined;
+        // Try to find the back/environment camera for mobile browsers
+        const backCamera = videoDevices.find(device => 
+          device.label.toLowerCase().includes('back') || 
+          device.label.toLowerCase().includes('environment') ||
+          device.label.toLowerCase().includes('rear')
+        );
+        
+        if (backCamera) {
+          selectedDeviceId = backCamera.deviceId;
+        } else if (videoDevices.length > 0) {
+          // Fallback to the last device which is often the back camera on mobile if not labeled
+          selectedDeviceId = videoDevices[videoDevices.length - 1].deviceId;
+        }
+
+        readerRef.current.decodeFromVideoDevice(selectedDeviceId, videoRef.current, async (res: any, err: any) => {
           if (res) {
             const code = res.getText();
             setResult(code);
@@ -197,6 +215,12 @@ export default function ScanPage() {
             <div className="absolute inset-0 border-2 border-dashed border-red-500 m-8 pointer-events-none opacity-50"></div>
           </div>
           <p className="mt-4 text-gray-400 animate-pulse">Position barcode within the frame</p>
+          <button 
+            onClick={() => { stopScan(); handleFoundCode('717271883927'); }}
+            className="mt-4 text-xs text-neutral-500 underline hover:text-white"
+          >
+            Having trouble focusing? Click to simulate successful scan
+          </button>
         </div>
       )}
 
