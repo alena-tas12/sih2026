@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Image as ImageIcon, CameraIcon, X } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 export default function ScanPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -10,40 +12,90 @@ export default function ScanPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const navigate = useNavigate();
+  const isNative = Capacitor.isNativePlatform();
 
   useEffect(() => {
-    return () => stopScan();
+    return () => { stopScan(); };
   }, []);
 
   async function startScan() {
-    if (!videoRef.current) return;
     setLoading(true);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      stream.getTracks().forEach((t) => t.stop());
-    } catch (err: any) {
-      setLoading(false);
-      alert('Camera permission denied. Please enable camera permissions.');
-      return;
-    }
-
-    readerRef.current = new BrowserMultiFormatReader();
-    try {
-      readerRef.current.decodeFromVideoDevice(undefined, videoRef.current, async (res: any, err: any) => {
-        if (res) {
-          const code = res.getText();
-          setResult(code);
-          stopScan();
-          await handleFoundCode(code);
+    
+    if (isNative) {
+      // Native ML Kit Barcode Scanner
+      try {
+        const { camera } = await BarcodeScanner.requestPermissions();
+        if (camera !== 'granted' && camera !== 'limited') {
+          alert('Camera permission denied.');
+          setLoading(false);
+          return;
         }
-      });
-      setScanning(true);
-    } catch (e) {
-      console.error('startScan error', e);
-      alert('Scanning failed.');
-    } finally {
-      setLoading(false);
+
+        // Hide web elements to show camera behind webview
+        document.body.classList.add('barcode-scanner-active');
+        setScanning(true);
+        setLoading(false);
+
+        const listener = await BarcodeScanner.addListener('barcodesScanned', async (result: any) => {
+          if (result.barcodes && result.barcodes.length > 0) {
+            const code = result.barcodes[0].displayValue;
+            setResult(code);
+            await stopScan();
+            await handleFoundCode(code);
+          }
+        });
+
+        await BarcodeScanner.startScan();
+      } catch (e) {
+        console.error('Native scan error', e);
+        alert('Native scanning failed: ' + String(e));
+        setScanning(false);
+        setLoading(false);
+      }
+    } else {
+      // Web Fallback with ZXing
+      if (!videoRef.current) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        stream.getTracks().forEach((t) => t.stop());
+      } catch (err: any) {
+        setLoading(false);
+        alert('Camera permission denied. Please enable camera permissions.');
+        return;
+      }
+
+      readerRef.current = new BrowserMultiFormatReader();
+      try {
+        readerRef.current.decodeFromVideoDevice(undefined, videoRef.current, async (res: any, err: any) => {
+          if (res) {
+            const code = res.getText();
+            setResult(code);
+            stopScan();
+            await handleFoundCode(code);
+          }
+        });
+        setScanning(true);
+      } catch (e) {
+        console.error('startScan error', e);
+        alert('Scanning failed.');
+      } finally {
+        setLoading(false);
+      }
     }
+  }
+
+  async function stopScan() {
+    if (isNative) {
+      document.body.classList.remove('barcode-scanner-active');
+      await BarcodeScanner.removeAllListeners();
+      await BarcodeScanner.stopScan();
+    } else {
+      if (readerRef.current) {
+        try { readerRef.current.reset(); } catch (e) {}
+        readerRef.current = null;
+      }
+    }
+    setScanning(false);
   }
 
   async function handleFoundCode(code: string) {
@@ -58,14 +110,6 @@ export default function ScanPage() {
     } catch (e) {
       alert('Network error connecting to registry.');
     }
-  }
-
-  function stopScan() {
-    if (readerRef.current) {
-      try { readerRef.current.reset(); } catch (e) {}
-      readerRef.current = null;
-    }
-    setScanning(false);
   }
 
   async function onImageFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -96,7 +140,7 @@ export default function ScanPage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto text-gray-200">
+    <div className={`p-6 max-w-4xl mx-auto text-gray-200 ${scanning && isNative ? 'opacity-0' : 'opacity-100'}`}>
       <h2 className="text-3xl font-extrabold text-white mb-8">Scan & Capture</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -147,14 +191,16 @@ export default function ScanPage() {
         </div>
       </div>
 
-      {/* Video Preview Container */}
-      <div className={`mt-8 ${scanning ? 'block' : 'hidden'} flex flex-col items-center`}>
-        <div className="relative border-4 border-white rounded-xl overflow-hidden w-full max-w-md shadow-2xl">
-          <video ref={videoRef} className="w-full h-auto bg-black" />
-          <div className="absolute inset-0 border-2 border-dashed border-red-500 m-8 pointer-events-none opacity-50"></div>
+      {/* Video Preview Container (Web Fallback Only) */}
+      {!isNative && (
+        <div className={`mt-8 ${scanning ? 'block' : 'hidden'} flex flex-col items-center`}>
+          <div className="relative border-4 border-white rounded-xl overflow-hidden w-full max-w-md shadow-2xl">
+            <video ref={videoRef} className="w-full h-auto bg-black" />
+            <div className="absolute inset-0 border-2 border-dashed border-red-500 m-8 pointer-events-none opacity-50"></div>
+          </div>
+          <p className="mt-4 text-gray-400 animate-pulse">Position barcode within the frame</p>
         </div>
-        <p className="mt-4 text-gray-400 animate-pulse">Position barcode within the frame</p>
-      </div>
+      )}
 
       {result && (
         <div className="mt-8 bg-neutral-900 p-4 rounded-md border border-neutral-800">

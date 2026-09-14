@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor-mlkit/barcode-scanning": "^8.2.1",
+    "@capacitor/core": "^8.5.2",
     "@zxing/browser": "^0.2.1",
     "lucide-react": "^1.45.0",
     "react": "^19.2.8",

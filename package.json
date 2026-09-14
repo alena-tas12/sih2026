@@ -6,6 +6,7 @@
     "build": "cd apps/api && npm install && cd ../../apps/web && npm install && npm run build"
   },
   "dependencies": {
+    "@capacitor-mlkit/barcode-scanning": "^8.2.1",
     "@capacitor/android": "^8.5.1",
     "@capacitor/cli": "^8.5.1",
     "@capacitor/core": "^8.5.1",

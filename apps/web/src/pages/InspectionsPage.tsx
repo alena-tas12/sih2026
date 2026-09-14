@@ -40,10 +40,10 @@ export default function InspectionsPage() {
       const prod = await prodRes.json();
       setProduct(prod);
 
-      // Create Inspection Record
+      const token = localStorage.getItem('genesis_auth');
       const insRes = await fetch('/api/inspections', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ gtin: lookupGtin, location_id: 'LOC-BLR' })
       });
       const insData = await insRes.json();
@@ -183,6 +183,12 @@ export default function InspectionsPage() {
                 <div style={{ fontSize: '12px', color: '#666', fontWeight: 'bold', textTransform: 'uppercase' }}>Product Master Reference</div>
                 <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{product.name}</div>
                 <div style={{ fontSize: '14px', color: '#666' }}>GTIN: {gtin} • Master MRP: ₹{product.standard_mrp}</div>
+                <button 
+                  onClick={() => navigate(`/products?gtin=${encodeURIComponent(gtin)}`)}
+                  style={{ marginTop: '8px', padding: '4px 8px', background: '#eee', border: '1px solid #ccc', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}
+                >
+                  View Product Intel ↗
+                </button>
               </div>
               <ShieldCheck size={32} color="#000" />
             </div>
